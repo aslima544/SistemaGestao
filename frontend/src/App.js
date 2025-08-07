@@ -537,7 +537,18 @@ const App = () => {
       // Update both states for immediate UI refresh
       await fetchDashboardData(); // Updates appointments state
       const agendamentosRes = await axios.get('/api/appointments');
-      setAgendamentos(agendamentosRes.data); // Updates agendamentos state for slots
+      
+      // Process agendamentos data with same format as useEffect
+      const ags = agendamentosRes.data.map(a => {
+        const dt = new Date(a.appointment_date);
+        return {
+          ...a,
+          horario: dt.toTimeString().slice(0,5),
+          data: dt.toISOString().slice(0,10),
+          duration: a.duration_minutes || 30,
+        };
+      });
+      setAgendamentos(ags); // Updates agendamentos state for slots with proper format
       
       alert('Consulta agendada com sucesso!');
     } catch (error) {
