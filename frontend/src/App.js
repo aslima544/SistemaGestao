@@ -2146,7 +2146,6 @@ const App = () => {
               
               // Se for erro 409 (conflito), forçar reload dos slots para mostrar estado real
               if (err.response && err.response.status === 409) {
-                console.log('⚠️ CONFLITO 409 - Recarregando slots para mostrar estado atual...');
                 if (consultorioSlotsRef.current && consultorioSlotsRef.current.recarregar) {
                   await consultorioSlotsRef.current.recarregar();
                 }
