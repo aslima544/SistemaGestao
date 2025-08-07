@@ -495,8 +495,13 @@ async def get_consultorio_slots(
         # Get operating hours from consultorio data (dynamic)
         horario_info = None
         
-        # Check if consultorio has fixed_schedule
-        if consultorio.get("fixed_schedule") and consultorio["fixed_schedule"].get("start") and consultorio["fixed_schedule"].get("end"):
+        # Check if consultorio has fixed_schedule with valid data
+        if (consultorio.get("fixed_schedule") and 
+            consultorio["fixed_schedule"].get("start") and 
+            consultorio["fixed_schedule"].get("end") and
+            isinstance(consultorio["fixed_schedule"]["start"], str) and
+            isinstance(consultorio["fixed_schedule"]["end"], str)):
+            
             horario_info = {
                 "inicio": consultorio["fixed_schedule"]["start"],
                 "fim": consultorio["fixed_schedule"]["end"]
@@ -516,12 +521,19 @@ async def get_consultorio_slots(
             }
             horario_info = default_hours.get(consultorio_name, {"inicio": "08:00", "fim": "17:00"})
         
-        # Generate all 15-minute slots
-        inicio_parts = horario_info["inicio"].split(":")
-        fim_parts = horario_info["fim"].split(":")
+        # Validate horario_info structure
+        if not horario_info or not horario_info.get("inicio") or not horario_info.get("fim"):
+            raise HTTPException(status_code=500, detail=f"Invalid operating hours configuration for {consultorio.get('name', 'unknown')}")
         
-        inicio_minutos = int(inicio_parts[0]) * 60 + int(inicio_parts[1])
-        fim_minutos = int(fim_parts[0]) * 60 + int(fim_parts[1])
+        # Generate all 15-minute slots
+        try:
+            inicio_parts = horario_info["inicio"].split(":")
+            fim_parts = horario_info["fim"].split(":")
+            
+            inicio_minutos = int(inicio_parts[0]) * 60 + int(inicio_parts[1])
+            fim_minutos = int(fim_parts[0]) * 60 + int(fim_parts[1])
+        except (ValueError, IndexError, AttributeError) as e:
+            raise HTTPException(status_code=500, detail=f"Invalid time format in operating hours: {e}")
         
         slots = []
         for minutos in range(inicio_minutos, fim_minutos, 15):
