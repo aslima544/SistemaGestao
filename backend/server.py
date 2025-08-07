@@ -893,6 +893,39 @@ async def create_appointment(appointment: AppointmentCreate, current_user: dict 
     if not consultorio:
         raise HTTPException(status_code=404, detail="Consultório not found")
     
+    # Validate appointment is within consultorio operating hours
+    consultorio_name = consultorio.get("name", "C1")
+    horarios_map = {
+        "C1": {"inicio": "07:00", "fim": "16:00"},
+        "C2": {"inicio": "07:00", "fim": "16:00"},
+        "C3": {"inicio": "08:00", "fim": "17:00"},
+        "C4": {"inicio": "10:00", "fim": "19:00"},
+        "C5": {"inicio": "12:00", "fim": "21:00"},
+        "C6": {"inicio": "07:00", "fim": "19:00"},
+        "C7": {"inicio": "07:00", "fim": "19:00"},
+        "C8": {"inicio": "07:00", "fim": "19:00"}
+    }
+    
+    horario_info = horarios_map.get(consultorio_name, {"inicio": "08:00", "fim": "17:00"})
+    
+    # Get appointment time
+    apt_hour = appointment.appointment_date.hour
+    apt_minute = appointment.appointment_date.minute
+    apt_time_minutes = apt_hour * 60 + apt_minute
+    
+    # Get consultorio operating hours
+    inicio_parts = horario_info["inicio"].split(":")
+    fim_parts = horario_info["fim"].split(":")
+    inicio_minutes = int(inicio_parts[0]) * 60 + int(inicio_parts[1])
+    fim_minutes = int(fim_parts[0]) * 60 + int(fim_parts[1])
+    
+    # Check if appointment is within operating hours
+    if apt_time_minutes < inicio_minutes or apt_time_minutes >= fim_minutes:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Horário fora do funcionamento do {consultorio_name}. Funcionamento: {horario_info['inicio']}-{horario_info['fim']}"
+        )
+    
     # Check for conflicts (same consultorio at same time)
     start_time = appointment.appointment_date
     end_time = start_time + timedelta(minutes=appointment.duration_minutes)
