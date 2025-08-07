@@ -38,11 +38,11 @@ The issue was a **critical logic flaw in ConsultorioSlots component**:
 - **Line 2114**: Added proper data processing transformation
 - **Fixed**: Raw data processing issue that caused slots to not update visually
 
-**Phase 4 (FINAL)** - Fixed date handling bug in ModalAgendamento:
-- **Line 26**: Changed from hardcoded today's date to `dataSelecionada || new Date().toISOString().slice(0,10)`
-- **Added prop**: Pass `dataSelecionada` to ModalAgendamento component
-- **Added useEffect**: Update `dataAtendimento` when `dataSelecionada` changes
-- **Root Issue**: Appointments were being created for wrong dates, causing visual sync failures
+**Phase 5 (CRITICAL FIX)** - Fixed slot rendering logic in ConsultorioSlots.js:
+- **Line 43**: Removed `if (!slotPassado)` condition that blocked occupied slot detection
+- **Critical Impact**: Now ALL slots (past and future) are checked for occupancy
+- **Result**: Occupied slots like 17:30, 17:45, 18:00, 19:00 should now appear RED immediately
+- **Real-time Updates**: New appointments will show as red immediately, canceled ones as green
 
 ### Solution Implemented
 Fixed inconsistent data processing in App.js:
