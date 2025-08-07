@@ -2133,6 +2133,11 @@ const App = () => {
               });
               setAgendamentos(ags); // Updates agendamentos state for slots with proper format
               
+              // Recarregar slots visualmente
+              if (consultorioSlotsRef.current && consultorioSlotsRef.current.recarregar) {
+                consultorioSlotsRef.current.recarregar();
+              }
+              
               alert('Consulta agendada com sucesso!');
             } catch (err) {
               console.error('Erro ao salvar agendamento:', err);
