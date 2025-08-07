@@ -18,18 +18,23 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
   const [ano, mes, dia] = dataAgendamento.split('-').map(Number);
   
   // Debug logs para investigar o problema
-  console.log('🐛 ConsultorioSlots DEBUG:', {
+  const agendamentosC3 = agendamentos?.filter(a => a.consultorio_id === consultorio.id) || [];
+  const agendamentosHoje = agendamentosC3.filter(a => {
+    if (!a.appointment_date) return false;
+    const aptDate = new Date(a.appointment_date);
+    const aptDateStr = aptDate.toISOString().slice(0, 10);
+    return aptDateStr === dataAgendamento;
+  });
+  
+  console.log('🐛 ConsultorioSlots:', {
     consultorio_name: consultorio.name,
-    consultorio_id: consultorio.id,
-    dataSelecionada,
     dataAgendamento,
-    agendamentos_count: agendamentos?.length || 0,
-    agendamentos_c3: agendamentos?.filter(a => a.consultorio_id === consultorio.id)?.map(a => ({
-      id: a.id,
-      appointment_date: a.appointment_date,
-      status: a.status,
-      duration: a.duration
-    })) || []
+    agendamentosC3_total: agendamentosC3.length,
+    agendamentosC3_hoje: agendamentosHoje.length,
+    horarios_ocupados_hoje: agendamentosHoje.map(a => {
+      const date = new Date(a.appointment_date);
+      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    })
   });
 
   return (
