@@ -2074,6 +2074,7 @@ const App = () => {
           pacientes={patients}
           doctors={doctors}
           procedimentos={procedimentos}
+          dataSelecionada={dataSelecionada}
           onClose={() => setModalAgendamento({ aberto: false, consultorio: null, horario: null })}
           onSubmit={async dados => {
             // 1. Monte a string de data/hora completa
