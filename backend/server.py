@@ -475,8 +475,11 @@ async def get_consultorio_slots(
             apt_datetime = appointment["appointment_date"]
             duracao = appointment.get("duration_minutes", 30)
             
+            # Convert UTC appointment time to local time (GMT-3) for slot mapping
+            local_datetime = apt_datetime + timedelta(hours=-3)
+            
             # Mark all 15-minute slots occupied by this appointment
-            inicio_minutos_apt = apt_datetime.hour * 60 + apt_datetime.minute
+            inicio_minutos_apt = local_datetime.hour * 60 + local_datetime.minute
             fim_minutos_apt = inicio_minutos_apt + duracao
             
             for m in range(inicio_minutos_apt, fim_minutos_apt, 15):
