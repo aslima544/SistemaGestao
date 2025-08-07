@@ -2082,25 +2082,12 @@ const App = () => {
           dataSelecionada={dataSelecionada}
           onClose={() => setModalAgendamento({ aberto: false, consultorio: null, horario: null })}
           onSubmit={async dados => {
-            // Debug: vamos ver exatamente o que está acontecendo
-            console.log('🐛 DEBUG AGENDAMENTO:', {
-              dataAtendimento: dados.dataAtendimento,
-              horario: modalAgendamento.horario,
-              dataSelecionada: dataSelecionada
-            });
-            
-            // SOLUÇÃO: Criar data explicitamente sem problemas de timezone
+            // Create appointment with proper local timezone handling
             const [ano, mes, dia] = dados.dataAtendimento.split('-').map(Number);
             const [hora, minuto] = modalAgendamento.horario.split(':').map(Number);
             
-            // Criar data local (sem conversão de timezone)
+            // Create date in local timezone (no UTC conversion issues)
             const dataHora = new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
-            
-            console.log('🐛 NOVA LÓGICA:', {
-              ano, mes, dia, hora, minuto,
-              dataHora: dataHora,
-              dataHora_ISO: dataHora.toISOString()
-            });
 
             // 3. Valide se a data é válida
             if (isNaN(dataHora.getTime())) {
