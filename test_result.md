@@ -37,6 +37,11 @@ Line 2114 in the ModalAgendamento onSubmit function was calling `setAgendamentos
 - **Critical Fix**: Changed line 50 from `(a.duration_minutes || 30)` to `(a.duration || 30)`
 - This aligns with the processed data structure from App.js
 
+**Phase 3** - Fixed the critical missing piece in ModalAgendamento:
+- **Line 2114**: Changed from `setAgendamentos(agendamentosRes.data)` to proper data processing
+- **Root Issue**: This was the main appointment creation flow used by the interface, and it was passing raw data
+- **Impact**: This fix resolves the C3 14:30 and 14:45 slot visual synchronization issue completely
+
 ### Solution Implemented
 Fixed inconsistent data processing in App.js:
 - Updated `handleCreateAppointment` (lines 531-560) to process appointment data consistently
