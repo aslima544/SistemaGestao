@@ -412,11 +412,11 @@ class ConsultorioAPITester:
             self.log_test("Delete Patient", False, details)
             return False
 
-    def investigate_c3_appointments(self):
-        """Investigate C3 appointments and their dates - CRITICAL DEBUG"""
-        print("\n" + "🔍" * 60)
-        print("🔍 CRITICAL INVESTIGATION: C3 Appointments Date Analysis")
-        print("🔍" * 60)
+    def investigate_missing_1530_appointment(self):
+        """URGENT: Investigate missing 15:30 appointment for C3 today (2025-08-07)"""
+        print("\n" + "🚨" * 60)
+        print("🚨 URGENT INVESTIGATION: Missing 15:30 C3 Appointment (2025-08-07)")
+        print("🚨" * 60)
         
         # Target consultorio C3 ID
         c3_consultorio_id = "0f85e815-9efc-42fa-bdc9-11a924683e03"
@@ -430,101 +430,17 @@ class ConsultorioAPITester:
         
         print(f"✅ Successfully fetched {len(appointments_data)} total appointments")
         
-        # Filter C3 appointments
-        c3_appointments = [apt for apt in appointments_data if apt.get('consultorio_id') == c3_consultorio_id]
-        
-        print(f"\n📋 Found {len(c3_appointments)} appointments for Consultorio C3")
-        print(f"📋 Target C3 ID: {c3_consultorio_id}")
-        
-        if not c3_appointments:
-            print("⚠️  No appointments found for C3 - this might be the issue!")
-            return False
-        
-        # Analyze each C3 appointment
+        # Current date analysis
         today = datetime.now().strftime('%Y-%m-%d')
-        tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+        print(f"📅 Today's date: {today}")
+        print(f"🎯 Looking for: C3 15:30 appointment on {today}")
+        print(f"🏥 C3 Consultorio ID: {c3_consultorio_id}")
         
-        print(f"\n📅 Date Analysis (Today: {today}, Tomorrow: {tomorrow}):")
+        # 1. Search ALL appointments for 15:30 on ANY date
+        print(f"\n🔍 STEP 1: Searching ALL appointments for 15:30 slots (any date, any consultorio)")
         print("-" * 80)
+        all_1530_appointments = []
         
-        for i, apt in enumerate(c3_appointments, 1):
-            apt_date = apt.get('appointment_date', 'N/A')
-            apt_time = "N/A"
-            apt_day = "N/A"
-            
-            # Parse appointment date
-            if apt_date != 'N/A':
-                try:
-                    if isinstance(apt_date, str):
-                        # Handle ISO format
-                        parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
-                    else:
-                        # Handle datetime object
-                        parsed_date = apt_date
-                    
-                    apt_day = parsed_date.strftime('%Y-%m-%d')
-                    apt_time = parsed_date.strftime('%H:%M')
-                    
-                    # Determine if today or tomorrow
-                    if apt_day == today:
-                        day_label = "TODAY"
-                    elif apt_day == tomorrow:
-                        day_label = "TOMORROW"
-                    else:
-                        day_label = "OTHER"
-                    
-                except Exception as e:
-                    day_label = f"PARSE_ERROR: {str(e)}"
-            
-            print(f"  {i}. Appointment ID: {apt.get('id', 'N/A')}")
-            print(f"     📅 Date: {apt_day} ({day_label})")
-            print(f"     🕐 Time: {apt_time}")
-            print(f"     👤 Patient: {apt.get('patient_name', 'N/A')}")
-            print(f"     👨‍⚕️ Doctor: {apt.get('doctor_name', 'N/A')}")
-            print(f"     📝 Status: {apt.get('status', 'N/A')}")
-            print(f"     ⏱️  Duration: {apt.get('duration_minutes', 'N/A')} minutes")
-            print(f"     🏥 Consultorio: {apt.get('consultorio_name', 'N/A')}")
-            print(f"     📊 Raw Date: {apt_date}")
-            print("-" * 80)
-        
-        # Check for specific times mentioned in the issue (14:30 and 14:45)
-        target_times = ['14:30', '14:45']
-        found_target_times = []
-        
-        for apt in c3_appointments:
-            apt_date = apt.get('appointment_date', 'N/A')
-            if apt_date != 'N/A':
-                try:
-                    if isinstance(apt_date, str):
-                        parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
-                    else:
-                        parsed_date = apt_date
-                    
-                    apt_time = parsed_date.strftime('%H:%M')
-                    if apt_time in target_times:
-                        found_target_times.append({
-                            'time': apt_time,
-                            'date': parsed_date.strftime('%Y-%m-%d'),
-                            'id': apt.get('id', 'N/A'),
-                            'status': apt.get('status', 'N/A')
-                        })
-                except:
-                    pass
-        
-        print(f"\n🎯 TARGET TIMES ANALYSIS (14:30 and 14:45):")
-        print("-" * 50)
-        if found_target_times:
-            for target in found_target_times:
-                day_type = "TODAY" if target['date'] == today else "TOMORROW" if target['date'] == tomorrow else "OTHER"
-                print(f"  ✅ Found {target['time']} on {target['date']} ({day_type})")
-                print(f"     ID: {target['id']}, Status: {target['status']}")
-        else:
-            print("  ❌ No appointments found at 14:30 or 14:45")
-        
-        # Check all appointments for 14:45 regardless of consultorio
-        print(f"\n🔍 SEARCHING ALL APPOINTMENTS FOR 14:45 SLOTS:")
-        print("-" * 50)
-        all_1445_appointments = []
         for apt in appointments_data:
             apt_date = apt.get('appointment_date', 'N/A')
             if apt_date != 'N/A':
@@ -535,30 +451,193 @@ class ConsultorioAPITester:
                         parsed_date = apt_date
                     
                     apt_time = parsed_date.strftime('%H:%M')
-                    if apt_time == '14:45':
-                        all_1445_appointments.append({
+                    if apt_time == '15:30':
+                        all_1530_appointments.append({
                             'time': apt_time,
                             'date': parsed_date.strftime('%Y-%m-%d'),
                             'id': apt.get('id', 'N/A'),
                             'consultorio_id': apt.get('consultorio_id', 'N/A'),
                             'consultorio_name': apt.get('consultorio_name', 'N/A'),
-                            'status': apt.get('status', 'N/A')
+                            'patient_name': apt.get('patient_name', 'N/A'),
+                            'status': apt.get('status', 'N/A'),
+                            'created_at': apt.get('created_at', 'N/A')
+                        })
+                except Exception as e:
+                    print(f"⚠️  Error parsing appointment date: {e}")
+        
+        if all_1530_appointments:
+            print(f"✅ Found {len(all_1530_appointments)} appointments at 15:30:")
+            for i, apt in enumerate(all_1530_appointments, 1):
+                day_type = "TODAY" if apt['date'] == today else "OTHER DATE"
+                is_c3 = "✅ C3" if apt['consultorio_id'] == c3_consultorio_id else "❌ NOT C3"
+                print(f"  {i}. {apt['date']} ({day_type}) - {is_c3}")
+                print(f"     🏥 Consultorio: {apt['consultorio_name']} (ID: {apt['consultorio_id']})")
+                print(f"     👤 Patient: {apt['patient_name']}")
+                print(f"     📝 Status: {apt['status']}")
+                print(f"     🆔 ID: {apt['id']}")
+                print(f"     📅 Created: {apt['created_at']}")
+                print()
+        else:
+            print("❌ NO 15:30 appointments found in entire system!")
+        
+        # 2. Search specifically for C3 appointments on ANY date
+        print(f"\n🔍 STEP 2: Searching ALL C3 appointments (any date)")
+        print("-" * 80)
+        c3_appointments = [apt for apt in appointments_data if apt.get('consultorio_id') == c3_consultorio_id]
+        
+        print(f"📋 Found {len(c3_appointments)} total appointments for C3")
+        
+        if c3_appointments:
+            # Group by date
+            c3_by_date = {}
+            for apt in c3_appointments:
+                apt_date = apt.get('appointment_date', 'N/A')
+                if apt_date != 'N/A':
+                    try:
+                        if isinstance(apt_date, str):
+                            parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
+                        else:
+                            parsed_date = apt_date
+                        
+                        date_str = parsed_date.strftime('%Y-%m-%d')
+                        time_str = parsed_date.strftime('%H:%M')
+                        
+                        if date_str not in c3_by_date:
+                            c3_by_date[date_str] = []
+                        
+                        c3_by_date[date_str].append({
+                            'time': time_str,
+                            'id': apt.get('id', 'N/A'),
+                            'patient_name': apt.get('patient_name', 'N/A'),
+                            'status': apt.get('status', 'N/A'),
+                            'created_at': apt.get('created_at', 'N/A')
+                        })
+                    except Exception as e:
+                        print(f"⚠️  Error parsing C3 appointment: {e}")
+            
+            # Display by date
+            for date_str in sorted(c3_by_date.keys()):
+                day_type = "TODAY" if date_str == today else "OTHER DATE"
+                appointments = sorted(c3_by_date[date_str], key=lambda x: x['time'])
+                print(f"\n📅 {date_str} ({day_type}) - {len(appointments)} appointments:")
+                
+                for apt in appointments:
+                    is_target = "🎯 TARGET!" if apt['time'] == '15:30' and date_str == today else ""
+                    print(f"    🕐 {apt['time']} - {apt['patient_name']} ({apt['status']}) {is_target}")
+                    print(f"       ID: {apt['id']}")
+        
+        # 3. Check confirmed existing appointments for today
+        print(f"\n🔍 STEP 3: Confirmed existing C3 appointments for TODAY ({today})")
+        print("-" * 80)
+        
+        confirmed_today = [
+            "15:45 (canceled)",
+            "17:30", "17:45", "18:00", "18:30", "18:45", "19:00"
+        ]
+        
+        print("📋 Expected appointments based on user report:")
+        for apt_time in confirmed_today:
+            print(f"  ✅ {apt_time}")
+        
+        # Verify these in actual data
+        today_c3_appointments = []
+        for apt in c3_appointments:
+            apt_date = apt.get('appointment_date', 'N/A')
+            if apt_date != 'N/A':
+                try:
+                    if isinstance(apt_date, str):
+                        parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
+                    else:
+                        parsed_date = apt_date
+                    
+                    if parsed_date.strftime('%Y-%m-%d') == today:
+                        today_c3_appointments.append({
+                            'time': parsed_date.strftime('%H:%M'),
+                            'status': apt.get('status', 'N/A'),
+                            'patient_name': apt.get('patient_name', 'N/A'),
+                            'id': apt.get('id', 'N/A')
                         })
                 except:
                     pass
         
-        if all_1445_appointments:
-            for apt in all_1445_appointments:
-                day_type = "TODAY" if apt['date'] == today else "TOMORROW" if apt['date'] == tomorrow else "OTHER"
-                print(f"  ✅ Found 14:45 appointment on {apt['date']} ({day_type})")
-                print(f"     Consultorio: {apt['consultorio_name']} (ID: {apt['consultorio_id']})")
-                print(f"     ID: {apt['id']}, Status: {apt['status']}")
+        print(f"\n📊 ACTUAL C3 appointments found for TODAY:")
+        if today_c3_appointments:
+            today_c3_appointments.sort(key=lambda x: x['time'])
+            for apt in today_c3_appointments:
+                print(f"  🕐 {apt['time']} - {apt['patient_name']} ({apt['status']}) - ID: {apt['id']}")
         else:
-            print("  ❌ No 14:45 appointments found in entire system")
+            print("  ❌ NO C3 appointments found for today!")
         
-        print("\n" + "🔍" * 60)
-        print("🔍 INVESTIGATION COMPLETE")
-        print("🔍" * 60)
+        # 4. Search for recent failed attempts or deleted appointments
+        print(f"\n🔍 STEP 4: Analysis of appointment creation patterns")
+        print("-" * 80)
+        
+        # Look for appointments created recently that might have been deleted
+        recent_appointments = []
+        cutoff_date = datetime.now() - timedelta(days=2)  # Last 2 days
+        
+        for apt in appointments_data:
+            created_at = apt.get('created_at', 'N/A')
+            if created_at != 'N/A':
+                try:
+                    if isinstance(created_at, str):
+                        created_date = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                    else:
+                        created_date = created_at
+                    
+                    if created_date >= cutoff_date:
+                        recent_appointments.append({
+                            'created': created_date.strftime('%Y-%m-%d %H:%M:%S'),
+                            'consultorio_id': apt.get('consultorio_id', 'N/A'),
+                            'consultorio_name': apt.get('consultorio_name', 'N/A'),
+                            'appointment_date': apt.get('appointment_date', 'N/A'),
+                            'status': apt.get('status', 'N/A'),
+                            'id': apt.get('id', 'N/A')
+                        })
+                except:
+                    pass
+        
+        print(f"📊 Recent appointments (last 2 days): {len(recent_appointments)}")
+        c3_recent = [apt for apt in recent_appointments if apt['consultorio_id'] == c3_consultorio_id]
+        
+        if c3_recent:
+            print(f"🏥 Recent C3 appointments: {len(c3_recent)}")
+            for apt in c3_recent:
+                print(f"  📅 Created: {apt['created']}")
+                print(f"  🕐 Scheduled: {apt['appointment_date']}")
+                print(f"  📝 Status: {apt['status']}")
+                print(f"  🆔 ID: {apt['id']}")
+                print()
+        else:
+            print("❌ No recent C3 appointments found")
+        
+        # 5. Final conclusion
+        print(f"\n🚨 INVESTIGATION SUMMARY")
+        print("=" * 60)
+        
+        # Check if 15:30 appointment exists for C3 today
+        target_found = False
+        for apt in all_1530_appointments:
+            if apt['date'] == today and apt['consultorio_id'] == c3_consultorio_id:
+                target_found = True
+                print(f"✅ FOUND: 15:30 C3 appointment for today!")
+                print(f"   🆔 ID: {apt['id']}")
+                print(f"   👤 Patient: {apt['patient_name']}")
+                print(f"   📝 Status: {apt['status']}")
+                break
+        
+        if not target_found:
+            print(f"❌ CONFIRMED: NO 15:30 C3 appointment found for today ({today})")
+            print(f"🔍 Possible explanations:")
+            print(f"   1. Appointment was never successfully created")
+            print(f"   2. Appointment was created but later deleted/canceled")
+            print(f"   3. Appointment was created for wrong date")
+            print(f"   4. Frontend/backend synchronization issue")
+            print(f"   5. Database inconsistency")
+        
+        print("\n" + "🚨" * 60)
+        print("🚨 URGENT INVESTIGATION COMPLETE")
+        print("🚨" * 60)
         
         return True
 
