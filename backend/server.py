@@ -897,19 +897,29 @@ async def create_appointment(appointment: AppointmentCreate, current_user: dict 
         raise HTTPException(status_code=404, detail="Consultório not found")
     
     # Validate appointment is within consultorio operating hours
-    consultorio_name = consultorio.get("name", "C1")
-    horarios_map = {
-        "C1": {"inicio": "07:00", "fim": "16:00"},
-        "C2": {"inicio": "07:00", "fim": "16:00"},
-        "C3": {"inicio": "08:00", "fim": "17:00"},
-        "C4": {"inicio": "10:00", "fim": "19:00"},
-        "C5": {"inicio": "12:00", "fim": "21:00"},
-        "C6": {"inicio": "07:00", "fim": "19:00"},
-        "C7": {"inicio": "07:00", "fim": "19:00"},
-        "C8": {"inicio": "07:00", "fim": "19:00"}
-    }
+    # Get operating hours from consultorio data (not hardcoded)
+    horario_info = None
     
-    horario_info = horarios_map.get(consultorio_name, {"inicio": "08:00", "fim": "17:00"})
+    # Check if consultorio has fixed_schedule
+    if consultorio.get("fixed_schedule") and consultorio["fixed_schedule"].get("start") and consultorio["fixed_schedule"].get("end"):
+        horario_info = {
+            "inicio": consultorio["fixed_schedule"]["start"],
+            "fim": consultorio["fixed_schedule"]["end"]
+        }
+    else:
+        # Fallback to default hours or add custom hours field
+        consultorio_name = consultorio.get("name", "C1")
+        default_hours = {
+            "C1": {"inicio": "07:00", "fim": "16:00"},
+            "C2": {"inicio": "07:00", "fim": "16:00"},
+            "C3": {"inicio": "08:00", "fim": "17:00"},
+            "C4": {"inicio": "10:00", "fim": "19:00"},
+            "C5": {"inicio": "12:00", "fim": "21:00"},
+            "C6": {"inicio": "07:00", "fim": "19:00"},
+            "C7": {"inicio": "07:00", "fim": "19:00"},
+            "C8": {"inicio": "07:00", "fim": "19:00"}
+        }
+        horario_info = default_hours.get(consultorio_name, {"inicio": "08:00", "fim": "17:00"})
     
     # Convert UTC appointment time to local time (GMT-3) for validation
     utc_dt = appointment.appointment_date
