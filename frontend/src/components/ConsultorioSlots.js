@@ -96,8 +96,6 @@ function ConsultorioSlots({ consultorio, dataSelecionada, onAgendar, onCancelarA
           let desabilitado = false;
           let onClick = () => {
             onAgendar(time);
-            // Recarregar slots após agendamento para mostrar mudança imediata
-            setTimeout(recarregarSlots, 1000);
           };
           
           if (is_occupied) {
