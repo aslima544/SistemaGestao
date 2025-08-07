@@ -613,6 +613,18 @@ def main():
     print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     tester = ConsultorioAPITester()
+    
+    # Quick investigation mode for C3 appointments
+    if len(sys.argv) > 1 and sys.argv[1] == "--investigate-c3":
+        print("\n🔍 RUNNING C3 INVESTIGATION MODE")
+        if not tester.test_login():
+            print("❌ Login failed - cannot investigate")
+            return 1
+        
+        tester.investigate_c3_appointments()
+        return 0
+    
+    # Full test suite
     success = tester.run_all_tests()
     
     return 0 if success else 1
