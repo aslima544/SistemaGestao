@@ -275,3 +275,8 @@ The backend is working correctly. The C3 14:30 appointment exists in the databas
 - **Dashboard Count**: Correct (0 occupied slots for C3)
 
 **Conclusion**: C3 data cleanup completed successfully. All incorrect appointments (>= 17:00) have been canceled. Dashboard now shows accurate counts and C3 schedule is clean for proper testing.
+
+## Agent Communication
+
+### Testing Agent Update (2025-08-07 19:16)
+**Message**: URGENT C3 DATA CLEANUP COMPLETED SUCCESSFULLY. Found and canceled 9 incorrect appointments scheduled after 17:00 for C3 consultorio (which operates 08:00-17:00). Dashboard now shows correct count (0 occupied slots for C3). Database is clean and ready for proper testing. All backend APIs working correctly.
