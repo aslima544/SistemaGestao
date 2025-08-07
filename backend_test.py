@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 class ConsultorioAPITester:
-    def __init__(self, base_url="https://8af00e10-3989-4667-8690-ce236d12eb37.preview.emergentagent.com"):
+    def __init__(self, base_url="https://579d423c-bebf-48d6-96f5-a4eb007d717e.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0
@@ -503,7 +503,7 @@ class ConsultorioAPITester:
 def main():
     """Main test execution"""
     print("Sistema de Gestão de Consultórios - Backend API Testing")
-    print(f"Testing against: https://8af00e10-3989-4667-8690-ce236d12eb37.preview.emergentagent.com")
+    print(f"Testing against: https://579d423c-bebf-48d6-96f5-a4eb007d717e.preview.emergentagent.com")
     print(f"Test started at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     tester = ConsultorioAPITester()
