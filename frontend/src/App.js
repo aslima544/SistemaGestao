@@ -1989,6 +1989,77 @@ const App = () => {
 };
 
 
+  // Componente para editar horários
+  const HorarioForm = ({ consultorio, onSubmit, onCancel }) => {
+    const [horarioInicio, setHorarioInicio] = useState(
+      consultorio?.fixed_schedule?.start || '08:00'
+    );
+    const [horarioFim, setHorarioFim] = useState(
+      consultorio?.fixed_schedule?.end || '17:00'
+    );
+
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (horarioInicio >= horarioFim) {
+        alert('Horário de fim deve ser maior que horário de início');
+        return;
+      }
+      onSubmit(horarioInicio, horarioFim);
+    };
+
+    return (
+      <div className="modal">
+        <div className="modal-content">
+          <h3>Editar Horários - {consultorio?.name}</h3>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Horário de Início
+              </label>
+              <input
+                type="time"
+                className="input-field mt-1"
+                value={horarioInicio}
+                onChange={e => setHorarioInicio(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Horário de Fim
+              </label>
+              <input
+                type="time"
+                className="input-field mt-1"
+                value={horarioFim}
+                onChange={e => setHorarioFim(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="btn-primary"
+                disabled={loading}
+              >
+                {loading ? 'Salvando...' : 'Salvar Horários'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
  // Main App Layout
   if (!currentUser) {
     return <LoginForm />;
