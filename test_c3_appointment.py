@@ -128,6 +128,34 @@ class C3AppointmentTester:
             self.log_result("Create Test Doctor", False, f"Failed to create doctor (Status: {status_code})")
             return None
     
+    def check_existing_c3_appointments(self, consultorio_id):
+        """Check for existing C3 appointments"""
+        success, data, status_code = self.make_request('GET', '/api/appointments')
+        
+        if success and isinstance(data, list):
+            tomorrow = datetime.now() + timedelta(days=1)
+            tomorrow_str = tomorrow.strftime('%Y-%m-%d')
+            
+            c3_appointments = [apt for apt in data if apt.get('consultorio_id') == consultorio_id]
+            tomorrow_c3 = [apt for apt in c3_appointments if tomorrow_str in apt.get('appointment_date', '')]
+            
+            self.log_result("Check Existing C3 Appointments", True, 
+                          f"Found {len(c3_appointments)} total C3 appointments, {len(tomorrow_c3)} for tomorrow")
+            
+            # Check specifically for 14:30
+            existing_1430 = [apt for apt in tomorrow_c3 if '14:30' in apt.get('appointment_date', '')]
+            if existing_1430:
+                apt = existing_1430[0]
+                self.log_result("Existing 14:30 Slot", True, 
+                              f"Slot already occupied - ID: {apt.get('id', '')[:8]}..., Status: {apt.get('status', '')}")
+                return True, existing_1430[0]
+            else:
+                self.log_result("Existing 14:30 Slot", True, "Slot is available")
+                return False, None
+        else:
+            self.log_result("Check Existing C3 Appointments", False, f"Failed to get appointments (Status: {status_code})")
+            return False, None
+
     def create_c3_appointment_1430(self, patient_id, doctor_id, consultorio_id):
         """Create appointment for C3 at 14:30 tomorrow"""
         # Calculate tomorrow at 14:30
@@ -154,8 +182,43 @@ class C3AppointmentTester:
             return appointment_id, data
         else:
             error_detail = data.get('detail', 'Unknown error')
-            self.log_result("Create C3 14:30 Appointment", False, 
-                          f"Failed to create appointment (Status: {status_code}) - {error_detail}")
+            if status_code == 409:
+                self.log_result("Create C3 14:30 Appointment", True, 
+                              f"Conflict detected as expected (Status: {status_code}) - {error_detail}")
+                return "conflict_detected", {"conflict": True, "detail": error_detail}
+            else:
+                self.log_result("Create C3 14:30 Appointment", False, 
+                              f"Failed to create appointment (Status: {status_code}) - {error_detail}")
+                return None, None
+    
+    def create_c3_appointment_alternative_time(self, patient_id, doctor_id, consultorio_id):
+        """Create appointment for C3 at an alternative time (15:00)"""
+        # Calculate tomorrow at 15:00
+        tomorrow = datetime.now() + timedelta(days=1)
+        appointment_time = tomorrow.replace(hour=15, minute=0, second=0, microsecond=0)
+        
+        appointment_data = {
+            "patient_id": patient_id,
+            "doctor_id": doctor_id,
+            "consultorio_id": consultorio_id,
+            "appointment_date": appointment_time.isoformat() + "Z",
+            "duration_minutes": 30,
+            "notes": "Teste agendamento C3 15:00 (alternativo)",
+            "status": "scheduled"
+        }
+        
+        success, data, status_code = self.make_request('POST', '/api/appointments', appointment_data)
+        
+        if success and 'id' in data:
+            appointment_id = data['id']
+            created_time = data.get('appointment_date', '')
+            self.log_result("Create C3 15:00 Appointment", True, 
+                          f"Alternative appointment created (ID: {appointment_id[:8]}...) for {created_time}")
+            return appointment_id, data
+        else:
+            error_detail = data.get('detail', 'Unknown error')
+            self.log_result("Create C3 15:00 Appointment", False, 
+                          f"Failed to create alternative appointment (Status: {status_code}) - {error_detail}")
             return None, None
     
     def verify_appointment_in_database(self, appointment_id):
