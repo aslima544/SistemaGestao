@@ -37,19 +37,13 @@ const ConsultorioSlots = React.forwardRef(({ consultorio, dataSelecionada, onAge
   const recarregarSlots = async () => {
     if (!consultorio) return;
     
-    console.log('🔄 RECARREGANDO SLOTS...', { consultorio: consultorio.name, dataHoje });
-    
     try {
       const response = await axios.get(
         `/api/consultorios/${consultorio.id}/slots?date=${dataHoje}`
       );
-      
-      console.log('📊 NOVOS DADOS RECEBIDOS:', response.data.slots?.length, 'slots');
-      console.log('🔍 SLOTS OCUPADOS:', response.data.slots?.filter(s => s.is_occupied)?.map(s => s.time));
-      
       setSlots(response.data.slots);
     } catch (err) {
-      console.error('❌ Erro ao recarregar slots:', err);
+      console.error('Erro ao recarregar slots:', err);
     }
   };
 
