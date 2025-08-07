@@ -1677,8 +1677,7 @@ const App = () => {
         </h3>
         <ConsultorioSlots
           consultorio={consultorios.find(c => c.id === consultorioSelecionado)}
-          agendamentos={agendamentos}
-          dataSelecionada={dataSelecionada} // <-- aqui está a data!
+          dataSelecionada={dataSelecionada}
           onAgendar={horario =>
             setModalAgendamento({
               aberto: true,
