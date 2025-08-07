@@ -409,6 +409,73 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
     created_user = db.users.find_one({"_id": result.inserted_id})
     return serialize_doc(created_user)
 
+@app.put("/api/consultorios/{consultorio_id}/horario")
+async def update_consultorio_hours(
+    consultorio_id: str,
+    horario_inicio: str = Query(..., description="Horário de início (HH:MM)"),
+    horario_fim: str = Query(..., description="Horário de fim (HH:MM)"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update consultorio operating hours.
+    Only admins can modify consultorio schedules.
+    """
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can modify consultorio schedules")
+    
+    # Validate time format
+    import re
+    time_pattern = r'^([01]?[0-9]|2[0-3]):[0-5][0-9]$'
+    if not re.match(time_pattern, horario_inicio) or not re.match(time_pattern, horario_fim):
+        raise HTTPException(status_code=400, detail="Invalid time format. Use HH:MM")
+    
+    # Validate that end time is after start time
+    start_minutes = int(horario_inicio[:2]) * 60 + int(horario_inicio[3:])
+    end_minutes = int(horario_fim[:2]) * 60 + int(horario_fim[3:])
+    
+    if end_minutes <= start_minutes:
+        raise HTTPException(status_code=400, detail="End time must be after start time")
+    
+    # Find consultorio
+    consultorio = db.consultorios.find_one({"id": consultorio_id})
+    if not consultorio:
+        raise HTTPException(status_code=404, detail="Consultório not found")
+    
+    # Update fixed_schedule with new hours
+    update_data = {}
+    if consultorio.get("fixed_schedule"):
+        update_data["fixed_schedule.start"] = horario_inicio
+        update_data["fixed_schedule.end"] = horario_fim
+    else:
+        # Create fixed_schedule if it doesn't exist
+        update_data["fixed_schedule"] = {
+            "start": horario_inicio,
+            "end": horario_fim,
+            "team": consultorio.get("name", "Unknown")
+        }
+    
+    update_data["updated_at"] = datetime.utcnow()
+    
+    # Update in database
+    result = db.consultorios.update_one(
+        {"id": consultorio_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Consultório not found")
+    
+    # Return updated consultorio
+    updated_consultorio = db.consultorios.find_one({"id": consultorio_id})
+    return {
+        "id": updated_consultorio["id"],
+        "name": updated_consultorio["name"], 
+        "horario_inicio": horario_inicio,
+        "horario_fim": horario_fim,
+        "updated_at": updated_consultorio["updated_at"].isoformat()
+    }
+
+
 @app.get("/api/consultorios/{consultorio_id}/slots")
 async def get_consultorio_slots(
     consultorio_id: str, 
