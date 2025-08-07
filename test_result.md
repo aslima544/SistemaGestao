@@ -13,14 +13,19 @@
 When a user schedules an appointment for C3 at 14:30, the backend correctly registers it and prevents duplicate bookings, but the frontend slot remains visually "green" (available) instead of turning "red" (occupied), requiring manual page refresh.
 
 ### Investigation Status
-✅ RESOLVED - Fixed data structure mismatch and field reference issue
+✅ COMPLETELY RESOLVED - Fixed all data processing inconsistencies across the application
 
 ### Root Cause Found
-The issue was a **data structure mismatch** between App.js and ConsultorioSlots.js:
+The issue was **multiple data processing inconsistencies** across different appointment creation flows:
 
-1. **App.js Data Processing**: Functions like `handleCreateAppointment` and `onCancelarAgendamento` process API data and rename `duration_minutes` to `duration`
-2. **ConsultorioSlots.js Expectation**: Component still referenced `a.duration_minutes` (line 50) instead of `a.duration`
-3. **Result**: Duration calculations defaulted to 30 minutes for all appointments, causing incorrect slot occupancy detection
+1. **App.js useEffect (lines 236-244)**: ✅ Correctly processed data with `duration: a.duration_minutes || 30`
+2. **App.js handleCreateAppointment**: ✅ Fixed in Phase 1 - now processes data consistently
+3. **App.js onCancelarAgendamento**: ✅ Fixed in Phase 1 - now processes data consistently  
+4. **ConsultorioSlots.js line 50**: ✅ Fixed in Phase 2 - changed to use `a.duration` instead of `a.duration_minutes`
+5. **App.js ModalAgendamento onSubmit (line 2114)**: ❌ **CRITICAL MISS** - Raw data was passed without processing
+
+**The Critical Missing Piece:**
+Line 2114 in the ModalAgendamento onSubmit function was calling `setAgendamentos(agendamentosRes.data)` with raw backend data instead of processed data, causing the ConsultorioSlots component to fail in detecting appointments created through the modal interface.
 
 ### Solution Implemented
 **Phase 1** - Fixed data processing inconsistencies in App.js:
