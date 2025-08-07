@@ -37,32 +37,33 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
           const agora = new Date();
           const slotPassado = dataSlot < agora;
 
-          // Só procura agendamento se o slot NÃO for passado
+          // Procura agendamento para QUALQUER horário (passado ou futuro)
           let agendamento = null;
           let ocupado = false;
-          if (!slotPassado) {
-            agendamento = agendamentos.find(a => {
-              if (!a.appointment_date) return false;
-              if (a.consultorio_id !== consultorio.id) return false;
-              
-              // Extract date and time from appointment_date
-              const appointmentDate = new Date(a.appointment_date);
-              const appointmentDateStr = appointmentDate.toISOString().slice(0, 10);
-              
-              // Check if it's the same date
-              if (appointmentDateStr !== dataAgendamento) return false;
-              
-              // Extract hour and minute from appointment_date
-              const appointmentHour = appointmentDate.getHours();
-              const appointmentMinute = appointmentDate.getMinutes();
-              const start = appointmentHour * 60 + appointmentMinute;
-              const end = start + (a.duration || 30);
+          
+          // CORREÇÃO: Sempre verifica ocupação, independente se o slot já passou
+          agendamento = agendamentos.find(a => {
+            if (!a.appointment_date) return false;
+            if (a.consultorio_id !== consultorio.id) return false;
+            
+            // Extract date and time from appointment_date
+            const appointmentDate = new Date(a.appointment_date);
+            const appointmentDateStr = appointmentDate.toISOString().slice(0, 10);
+            
+            // Check if it's the same date
+            if (appointmentDateStr !== dataAgendamento) return false;
+            
+            // Extract hour and minute from appointment_date
+            const appointmentHour = appointmentDate.getHours();
+            const appointmentMinute = appointmentDate.getMinutes();
+            const start = appointmentHour * 60 + appointmentMinute;
+            const end = start + (a.duration || 30);
 
-              const slotTime = sh * 60 + sm;
+            const slotTime = sh * 60 + sm;
 
-              return slotTime >= start && slotTime < end && a.status !== "canceled";
-            });
-            ocupado = !!agendamento;
+            return slotTime >= start && slotTime < end && a.status !== "canceled";
+          });
+          ocupado = !!agendamento;
           }
 
           return (
