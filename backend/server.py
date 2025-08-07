@@ -491,8 +491,12 @@ async def get_consultorio_slots(
                     "duration": duracao
                 }
         
-        # Build final response - SIMPLIFIED TIME LOGIC
-        current_time = datetime.utcnow()  # Use UTC consistently
+        # Build final response - CORRECT TIMEZONE LOGIC
+        # Get current time in Brazil timezone (UTC-3)
+        current_utc = datetime.utcnow()
+        brazil_offset = timedelta(hours=-3)  # GMT-3 (Brasília)
+        current_local = current_utc + brazil_offset
+        
         selected_date = start_date.date()
         
         processed_slots = []
@@ -501,9 +505,12 @@ async def get_consultorio_slots(
             slot_hour = int(slot_parts[0])
             slot_minute = int(slot_parts[1])
             
-            # TEMPORARY FIX: Disable past checking to make system usable
-            # Later can be configured based on user timezone
+            # Check if slot is in the past (only for today)
             is_past = False
+            if selected_date == current_local.date():  # Only check for today
+                current_hour_minute = current_local.hour * 60 + current_local.minute
+                slot_hour_minute = slot_hour * 60 + slot_minute
+                is_past = slot_hour_minute < current_hour_minute
             
             is_occupied = slot in ocupacao_map
             
