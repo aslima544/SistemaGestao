@@ -84,7 +84,7 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
           let cor = '#a7f3d0'; // verde (disponível)
           let texto = horario;
           let desabilitado = false;
-          let onClick = () => onAgendar(consultorio, horario);
+          let onClick = () => onAgendar(horario);
           
           if (slotInfo && slotInfo.ocupado) {
             // OCUPADO - VERMELHO
