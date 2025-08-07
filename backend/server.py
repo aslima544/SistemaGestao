@@ -493,18 +493,27 @@ async def get_consultorio_slots(
         
         # Build final response
         current_time = datetime.now()
-        current_date = current_time.date()
         selected_date = start_date.date()
         
         processed_slots = []
         for slot in slots:
             slot_parts = slot.split(":")
+            slot_hour = int(slot_parts[0])
+            slot_minute = int(slot_parts[1])
+            
+            # Create slot datetime for comparison
             slot_datetime = datetime.combine(selected_date, datetime.min.time().replace(
-                hour=int(slot_parts[0]), 
-                minute=int(slot_parts[1])
+                hour=slot_hour, 
+                minute=slot_minute
             ))
             
-            is_past = slot_datetime < current_time
+            # Fix timezone comparison - only check if slot is in the past
+            is_past = False
+            if selected_date == current_time.date():  # Only check for today
+                current_minutes = current_time.hour * 60 + current_time.minute
+                slot_minutes = slot_hour * 60 + slot_minute
+                is_past = slot_minutes < current_minutes
+            
             is_occupied = slot in ocupacao_map
             
             slot_data = {
