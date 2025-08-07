@@ -409,6 +409,125 @@ async def create_user(user: UserCreate, current_user: dict = Depends(get_current
     created_user = db.users.find_one({"_id": result.inserted_id})
     return serialize_doc(created_user)
 
+@app.get("/api/consultorios/{consultorio_id}/slots")
+async def get_consultorio_slots(
+    consultorio_id: str, 
+    date: str = Query(..., description="Date in YYYY-MM-DD format"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get processed slots for a consultorio on a specific date.
+    Returns ready-to-render slot data with occupancy status.
+    """
+    try:
+        # Get consultorio info
+        consultorio = db.consultorios.find_one({"id": consultorio_id})
+        if not consultorio:
+            raise HTTPException(status_code=404, detail="Consultorio not found")
+            
+        # Define consultorio hours (hardcoded for now, can be made dynamic)
+        horarios_map = {
+            "C1": {"inicio": "07:00", "fim": "16:00"},
+            "C2": {"inicio": "07:00", "fim": "16:00"},
+            "C3": {"inicio": "08:00", "fim": "17:00"},
+            "C4": {"inicio": "10:00", "fim": "19:00"},
+            "C5": {"inicio": "12:00", "fim": "21:00"},
+            "C6": {"inicio": "07:00", "fim": "19:00"},
+            "C7": {"inicio": "07:00", "fim": "19:00"},
+            "C8": {"inicio": "07:00", "fim": "19:00"}
+        }
+        
+        consultorio_name = consultorio.get("name", "C1")
+        horario_info = horarios_map.get(consultorio_name, {"inicio": "08:00", "fim": "17:00"})
+        
+        # Generate all 15-minute slots
+        inicio_parts = horario_info["inicio"].split(":")
+        fim_parts = horario_info["fim"].split(":")
+        
+        inicio_minutos = int(inicio_parts[0]) * 60 + int(inicio_parts[1])
+        fim_minutos = int(fim_parts[0]) * 60 + int(fim_parts[1])
+        
+        slots = []
+        for minutos in range(inicio_minutos, fim_minutos, 15):
+            horas = minutos // 60
+            mins = minutos % 60
+            horario = f"{horas:02d}:{mins:02d}"
+            slots.append(horario)
+        
+        # Get all appointments for this consultorio on this date
+        start_date = datetime.strptime(date, "%Y-%m-%d")
+        end_date = start_date + timedelta(days=1)
+        
+        appointments = list(db.appointments.find({
+            "consultorio_id": consultorio_id,
+            "appointment_date": {
+                "$gte": start_date,
+                "$lt": end_date
+            }
+        }))
+        
+        # Build occupancy map
+        ocupacao_map = {}
+        for appointment in appointments:
+            if appointment.get("status") == "canceled":
+                continue
+                
+            apt_datetime = appointment["appointment_date"]
+            duracao = appointment.get("duration_minutes", 30)
+            
+            # Mark all 15-minute slots occupied by this appointment
+            inicio_minutos_apt = apt_datetime.hour * 60 + apt_datetime.minute
+            fim_minutos_apt = inicio_minutos_apt + duracao
+            
+            for m in range(inicio_minutos_apt, fim_minutos_apt, 15):
+                h = m // 60
+                mins = m % 60
+                slot = f"{h:02d}:{mins:02d}"
+                ocupacao_map[slot] = {
+                    "appointment_id": appointment.get("id"),
+                    "patient_name": appointment.get("patient_name", ""),
+                    "doctor_name": appointment.get("doctor_name", ""),
+                    "status": appointment.get("status", "scheduled"),
+                    "duration": duracao
+                }
+        
+        # Build final response
+        current_time = datetime.now()
+        current_date = current_time.date()
+        selected_date = start_date.date()
+        
+        processed_slots = []
+        for slot in slots:
+            slot_parts = slot.split(":")
+            slot_datetime = datetime.combine(selected_date, datetime.min.time().replace(
+                hour=int(slot_parts[0]), 
+                minute=int(slot_parts[1])
+            ))
+            
+            is_past = slot_datetime < current_time
+            is_occupied = slot in ocupacao_map
+            
+            slot_data = {
+                "time": slot,
+                "is_occupied": is_occupied,
+                "is_past": is_past,
+                "is_available": not is_occupied and not is_past,
+                "occupancy_info": ocupacao_map.get(slot, None)
+            }
+            
+            processed_slots.append(slot_data)
+        
+        return {
+            "consultorio_id": consultorio_id,
+            "consultorio_name": consultorio_name,
+            "date": date,
+            "slots": processed_slots
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing slots: {str(e)}")
+
+
 @app.get("/api/users", response_model=List[User])
 async def get_users(current_user: dict = Depends(get_current_user)):
     users = list(db.users.find({}))
