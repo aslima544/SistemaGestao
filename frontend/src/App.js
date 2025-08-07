@@ -1660,7 +1660,7 @@ const App = () => {
               >
                 Ver horários
               </button>
-              {user?.role === 'admin' && (
+              {currentUser?.role === 'admin' && (
                 <button
                   className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                   onClick={() => {
