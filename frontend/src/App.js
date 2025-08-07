@@ -2144,6 +2144,7 @@ const App = () => {
                 console.error('❌ consultorioSlotsRef.current ou recarregar() não disponível:', consultorioSlotsRef.current);
               }
               
+              // Só mostra sucesso se chegou até aqui sem erro
               alert('Consulta agendada com sucesso!');
             } catch (err) {
               console.error('Erro ao salvar agendamento:', err);
