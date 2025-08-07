@@ -191,6 +191,9 @@ const App = () => {
   const [procedimentos, setProcedimentos] = useState([]);
   const [dataSelecionada, setDataSelecionada] = useState(new Date().toISOString().slice(0, 10));
   
+  // Referência para recarregar slots
+  const consultorioSlotsRef = React.useRef();
+  
   
   // Form states
   const [showPatientForm, setShowPatientForm] = useState(false);
