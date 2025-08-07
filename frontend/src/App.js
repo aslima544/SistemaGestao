@@ -2135,8 +2135,13 @@ const App = () => {
               setAgendamentos(ags); // Updates agendamentos state for slots with proper format
               
               // Recarregar slots visualmente
+              console.log('🎯 TENTANDO RECARREGAR SLOTS...');
               if (consultorioSlotsRef.current && consultorioSlotsRef.current.recarregar) {
-                consultorioSlotsRef.current.recarregar();
+                console.log('✅ Chamando recarregar()...');
+                await consultorioSlotsRef.current.recarregar();
+                console.log('✅ recarregar() concluído');
+              } else {
+                console.error('❌ consultorioSlotsRef.current ou recarregar() não disponível:', consultorioSlotsRef.current);
               }
               
               alert('Consulta agendada com sucesso!');
