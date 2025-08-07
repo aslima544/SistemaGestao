@@ -35,10 +35,15 @@ The issue was a **date handling bug in the ModalAgendamento component**:
 - **Critical Fix**: Changed line 50 from `(a.duration_minutes || 30)` to `(a.duration || 30)`
 - This aligns with the processed data structure from App.js
 
-**Phase 3** - Fixed the critical missing piece in ModalAgendamento:
-- **Line 2114**: Changed from `setAgendamentos(agendamentosRes.data)` to proper data processing
-- **Root Issue**: This was the main appointment creation flow used by the interface, and it was passing raw data
-- **Impact**: This fix resolves the C3 14:30 and 14:45 slot visual synchronization issue completely
+**Phase 3** - Fixed data processing in ModalAgendamento onSubmit:
+- **Line 2114**: Added proper data processing transformation
+- **Fixed**: Raw data processing issue that caused slots to not update visually
+
+**Phase 4 (FINAL)** - Fixed date handling bug in ModalAgendamento:
+- **Line 26**: Changed from hardcoded today's date to `dataSelecionada || new Date().toISOString().slice(0,10)`
+- **Added prop**: Pass `dataSelecionada` to ModalAgendamento component
+- **Added useEffect**: Update `dataAtendimento` when `dataSelecionada` changes
+- **Root Issue**: Appointments were being created for wrong dates, causing visual sync failures
 
 ### Solution Implemented
 Fixed inconsistent data processing in App.js:
