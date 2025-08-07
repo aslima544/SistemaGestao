@@ -1653,12 +1653,25 @@ const App = () => {
                 ? `${c.fixed_schedule.start} - ${c.fixed_schedule.end}`
                 : '07:00 - 19:00'}
             </div>
-            <button
-              className="btn-primary mt-2"
-              onClick={() => setConsultorioSelecionado(c.id)}
-            >
-              Ver horários
-            </button>
+            <div className="flex gap-2 mt-2">
+              <button
+                className="btn-primary"
+                onClick={() => setConsultorioSelecionado(c.id)}
+              >
+                Ver horários
+              </button>
+              {user?.role === 'admin' && (
+                <button
+                  className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  onClick={() => {
+                    setEditingItem({...c, type: 'horario'});
+                    setShowConsultorioForm(true);
+                  }}
+                >
+                  ⏰ Editar
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
