@@ -19,11 +19,11 @@ import ConsultorioSlots from './components/ConsultorioSlots';
 import horariosConsultorios from './constants/horariosConsultorios';
 
 
-function ModalAgendamento({ aberto, consultorio, horario, pacientes, doctors, procedimentos, onClose, onSubmit }) {
+function ModalAgendamento({ aberto, consultorio, horario, pacientes, doctors, procedimentos, dataSelecionada, onClose, onSubmit }) {
   const [pacienteId, setPacienteId] = useState('');
   const [doctorId, setDoctorId] = useState('');
   const [procedimentoId, setProcedimentoId] = useState('');
-  const [dataAtendimento, setDataAtendimento] = useState(new Date().toISOString().slice(0,10));
+  const [dataAtendimento, setDataAtendimento] = useState(dataSelecionada || new Date().toISOString().slice(0,10));
   const [duration, setDuration] = useState(30);
 
   const coresProcedimentos = [
