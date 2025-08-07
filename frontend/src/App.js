@@ -563,9 +563,18 @@ const App = () => {
   if (window.confirm("Deseja liberar este horário?")) {
     try {
       await axios.put(`/api/appointments/${agendamento.id}/cancel`);
-      // Atualize os agendamentos após cancelar
+      // Atualize os agendamentos após cancelar com formato consistente
       const res = await axios.get('/api/appointments');
-      setAgendamentos(res.data);
+      const ags = res.data.map(a => {
+        const dt = new Date(a.appointment_date);
+        return {
+          ...a,
+          horario: dt.toTimeString().slice(0,5),
+          data: dt.toISOString().slice(0,10),
+          duration: a.duration_minutes || 30,
+        };
+      });
+      setAgendamentos(ags);
       // Atualize o dashboard também
       fetchDashboardData();
     } catch (err) {
