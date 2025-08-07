@@ -64,7 +64,6 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
             return slotTime >= start && slotTime < end && a.status !== "canceled";
           });
           ocupado = !!agendamento;
-          }
 
           return (
             <div key={horario} style={{ position: 'relative', display: 'inline-block' }}>
