@@ -39,9 +39,14 @@ Fixed inconsistent data processing in App.js:
 - Both functions now apply the same data transformation as the useEffect (lines 236-244)
 
 ### Code Changes Made
-1. **App.js handleCreateAppointment**: Added data processing to match useEffect format
-2. **App.js onCancelarAgendamento**: Added consistent data processing
+**Phase 1 - App.js Data Processing:**
+1. **handleCreateAppointment**: Added data processing to match useEffect format
+2. **onCancelarAgendamento**: Added consistent data processing
 3. Both functions now transform API response data before calling setAgendamentos()
+
+**Phase 2 - ConsultorioSlots.js Field Reference:**
+4. **Line 50**: Changed `(a.duration_minutes || 30)` to `(a.duration || 30)`
+5. This critical fix aligns field names with processed data structure
 
 ### Testing History
 - ✅ Backend testing completed - backend working correctly (no issues)
