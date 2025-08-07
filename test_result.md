@@ -83,3 +83,42 @@ Fixed inconsistent data processing in App.js:
 User reported: "slot C3 14:30 não atualiza para vermelho após criação do agendamento, mesmo com o agendamento existindo no backend"
 
 **Status**: Problem identified and fixed. Solution targets real-time visual updates without page refresh.
+
+## CRITICAL DATABASE INVESTIGATION RESULTS (2025-08-07 17:30)
+
+### Investigation Summary
+✅ **Backend Database Query Completed** - Comprehensive analysis of C3 appointments
+
+### Key Findings
+1. **C3 14:30 Appointment EXISTS** ✅
+   - **Appointment ID**: 6974b5ce-d9b8-4ac7-ab07-589f2b6f4ff0
+   - **Date**: 2025-08-08 (TOMORROW)
+   - **Time**: 14:30
+   - **Status**: scheduled
+   - **Duration**: 30 minutes
+   - **Consultorio ID**: 0f85e815-9efc-42fa-bdc9-11a924683e03 (C3)
+
+2. **C3 14:45 Appointment DOES NOT EXIST** ❌
+   - No 14:45 appointment found for C3
+   - No 14:45 appointment found in entire system
+   - User may have attempted to create but it failed or was canceled
+
+3. **Date Discrepancy Identified** 🚨
+   - **Critical Issue**: C3 14:30 appointment is scheduled for **TOMORROW (2025-08-08)** not TODAY (2025-08-07)
+   - **Frontend Issue**: If frontend is showing today's date but appointment is for tomorrow, this explains the visual synchronization problem
+   - **Root Cause**: Date handling inconsistency between frontend display and backend storage
+
+### Database State Analysis
+- **Total Appointments**: 20 appointments in system
+- **C3 Appointments**: 8 appointments total for Consultorio C3
+- **C3 Today**: 5 appointments (including 1 canceled)
+- **C3 Tomorrow**: 2 appointments (including 1 canceled)
+- **C3 14:30 Status**: EXISTS and SCHEDULED for tomorrow
+
+### Conclusion
+The backend is working correctly. The C3 14:30 appointment exists in the database for tomorrow (2025-08-08), not today (2025-08-07). The frontend synchronization issue is likely related to:
+1. **Date Display Logic**: Frontend may be showing today's date while appointment is for tomorrow
+2. **Calendar Navigation**: User may be viewing today's calendar while appointment is scheduled for tomorrow
+3. **Time Zone Handling**: Potential timezone conversion issues between frontend and backend
+
+**Recommendation**: Check frontend date handling and calendar navigation logic to ensure proper date synchronization between frontend display and backend data.
