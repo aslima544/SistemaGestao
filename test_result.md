@@ -13,17 +13,16 @@
 When a user schedules an appointment for C3 at 14:30, the backend correctly registers it and prevents duplicate bookings, but the frontend slot remains visually "green" (available) instead of turning "red" (occupied), requiring manual page refresh.
 
 ### Investigation Status
-✅ COMPLETELY RESOLVED - Fixed date handling bug in appointment creation
+✅ COMPLETELY RESOLVED - Fixed critical slot rendering bug
 
 ### Root Cause Found
-The issue was a **date handling bug in the ModalAgendamento component**:
+The issue was a **critical logic flaw in ConsultorioSlots component**:
 
-1. **Frontend Date Selection**: Users could select any date in the interface (`dataSelecionada`)
-2. **Modal Bug**: `ModalAgendamento` component always initialized `dataAtendimento` with today's date (`new Date().toISOString().slice(0,10)`) regardless of user's selected date
-3. **Backend Storage**: Appointments were saved with wrong dates (today instead of selected date)
-4. **Visual Sync Issue**: Since appointments were saved for wrong dates, slots appeared available when they should have been occupied
+1. **Line 43**: `if (!slotPassado)` condition was preventing occupied slots from showing as red if they were in the past
+2. **Problem**: Slots like 17:30, 17:45, 18:00, 19:00 that were occupied but in the past (after current time) were not being checked for occupancy
+3. **Result**: Even though backend had correct appointment data, frontend only checked occupancy for future slots
 
-**Critical Bug**: Line 26 in ModalAgendamento was hardcoded to today's date instead of using `dataSelecionada` prop.
+**Critical Bug**: The component only searched for appointments in future slots, ignoring occupied slots that had already passed, causing them to appear green instead of red.
 
 ### Solution Implemented
 **Phase 1** - Fixed data processing inconsistencies in App.js:
