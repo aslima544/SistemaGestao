@@ -1,65 +1,75 @@
-import React from 'react';
-import horariosConsultorios from '../constants/horariosConsultorios';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgendar, onCancelarAgendamento }) {
-  if (!consultorio) return null;
+function ConsultorioSlots({ consultorio, dataSelecionada, onAgendar, onCancelarAgendamento }) {
+  const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Configuração simples e clara
   const dataHoje = dataSelecionada || new Date().toISOString().slice(0, 10);
-  const horarioInfo = horariosConsultorios[consultorio.name] || { inicio: "08:00", fim: "17:00" };
-  
-  // Criar lista de slots de 15 em 15 minutos
-  const gerarSlots = () => {
-    const slots = [];
-    const [inicioHora, inicioMin] = horarioInfo.inicio.split(':').map(Number);
-    const [fimHora, fimMin] = horarioInfo.fim.split(':').map(Number);
+
+  // Carrega slots do backend
+  useEffect(() => {
+    if (!consultorio) return;
     
-    const inicioMinutos = inicioHora * 60 + inicioMin;
-    const fimMinutos = fimHora * 60 + fimMin;
+    const carregarSlots = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await axios.get(
+          `/api/consultorios/${consultorio.id}/slots?date=${dataHoje}`
+        );
+        
+        setSlots(response.data.slots);
+      } catch (err) {
+        console.error('Erro ao carregar slots:', err);
+        setError('Erro ao carregar horários disponíveis');
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    for (let minutos = inicioMinutos; minutos < fimMinutos; minutos += 15) {
-      const horas = Math.floor(minutos / 60);
-      const mins = minutos % 60;
-      const horario = `${horas.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-      slots.push(horario);
+    carregarSlots();
+  }, [consultorio, dataHoje]);
+
+  // Recarrega slots após ações (criar/cancelar agendamento)
+  const recarregarSlots = async () => {
+    if (!consultorio) return;
+    
+    try {
+      const response = await axios.get(
+        `/api/consultorios/${consultorio.id}/slots?date=${dataHoje}`
+      );
+      setSlots(response.data.slots);
+    } catch (err) {
+      console.error('Erro ao recarregar slots:', err);
     }
-    
-    return slots;
   };
 
-  // Criar mapa de agendamentos para busca rápida
-  const mapaAgendamentos = {};
-  agendamentos.forEach(agendamento => {
-    // Só processar agendamentos do consultório atual e da data atual
-    if (agendamento.consultorio_id !== consultorio.id) return;
-    
-    const dataAgendamento = new Date(agendamento.appointment_date);
-    const dataStr = dataAgendamento.toISOString().slice(0, 10);
-    
-    if (dataStr !== dataHoje) return;
-    
-    // Calcular todos os slots que este agendamento ocupa
-    const horaInicio = dataAgendamento.getHours();
-    const minInicio = dataAgendamento.getMinutes();
-    const duracao = agendamento.duration || 30;
-    
-    const inicioMinutos = horaInicio * 60 + minInicio;
-    const fimMinutos = inicioMinutos + duracao;
-    
-    // Marcar todos os slots ocupados por este agendamento
-    for (let minutos = inicioMinutos; minutos < fimMinutos; minutos += 15) {
-      const horas = Math.floor(minutos / 60);
-      const mins = minutos % 60;
-      const slot = `${horas.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-      
-      mapaAgendamentos[slot] = {
-        agendamento: agendamento,
-        ocupado: agendamento.status !== 'canceled'
-      };
-    }
-  });
+  if (!consultorio) return null;
 
-  const slots = gerarSlots();
+  if (loading) {
+    return (
+      <div style={{ padding: '20px' }}>
+        <h3 style={{ marginBottom: '20px', color: '#333' }}>
+          {consultorio.name} - Carregando...
+        </h3>
+        <div>⏳ Carregando horários...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: '20px' }}>
+        <h3 style={{ marginBottom: '20px', color: '#333' }}>
+          {consultorio.name} - Erro
+        </h3>
+        <div style={{ color: 'red' }}>{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px' }}>
@@ -73,40 +83,37 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
         gap: '8px',
         maxWidth: '600px'
       }}>
-        {slots.map(horario => {
-          const slotInfo = mapaAgendamentos[horario];
-          const agora = new Date();
-          const [h, m] = horario.split(':').map(Number);
-          const slotData = new Date(dataHoje + 'T' + horario + ':00');
-          const jaPassou = slotData < agora;
+        {slots.map(slot => {
+          const { time, is_occupied, is_past, is_available, occupancy_info } = slot;
           
-          // Estados possíveis: ocupado, passou, disponível
+          // Determinar cor e estado
           let cor = '#a7f3d0'; // verde (disponível)
-          let texto = horario;
           let desabilitado = false;
-          let onClick = () => onAgendar(horario);
+          let onClick = () => {
+            onAgendar(time);
+            // Recarregar slots após agendamento para mostrar mudança imediata
+            setTimeout(recarregarSlots, 1000);
+          };
           
-          if (slotInfo && slotInfo.ocupado) {
+          if (is_occupied) {
             // OCUPADO - VERMELHO
             cor = '#ef4444';
-            texto = horario;
             desabilitado = true;
             onClick = null;
-          } else if (jaPassou) {
+          } else if (is_past) {
             // JÁ PASSOU - CINZA
             cor = '#9ca3af';
-            texto = horario;
             desabilitado = true;
             onClick = null;
           }
           
           return (
             <button
-              key={horario}
+              key={time}
               disabled={desabilitado}
               style={{
                 backgroundColor: cor,
-                color: jaPassou ? '#6b7280' : (slotInfo && slotInfo.ocupado ? 'white' : '#1f2937'),
+                color: is_past ? '#6b7280' : (is_occupied ? 'white' : '#1f2937'),
                 border: 'none',
                 borderRadius: '6px',
                 padding: '8px 4px',
@@ -126,11 +133,18 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
               onMouseOut={(e) => {
                 e.target.style.transform = 'scale(1)';
               }}
+              title={
+                is_occupied 
+                  ? `Ocupado - ${occupancy_info?.patient_name || 'Paciente'}`
+                  : is_past 
+                    ? 'Horário já passou'
+                    : 'Disponível - clique para agendar'
+              }
             >
-              {texto}
+              {time}
               
               {/* Botão de cancelar para slots ocupados */}
-              {slotInfo && slotInfo.ocupado && (
+              {is_occupied && occupancy_info && (
                 <button
                   style={{
                     position: 'absolute',
@@ -150,8 +164,16 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
                   }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    onCancelarAgendamento(slotInfo.agendamento);
+                    // Simular objeto agendamento para cancelamento
+                    const agendamentoMock = {
+                      id: occupancy_info.appointment_id,
+                      patient_name: occupancy_info.patient_name
+                    };
+                    onCancelarAgendamento(agendamentoMock);
+                    // Recarregar slots após cancelamento
+                    setTimeout(recarregarSlots, 1000);
                   }}
+                  title={`Cancelar agendamento de ${occupancy_info.patient_name}`}
                 >
                   ×
                 </button>
