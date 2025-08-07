@@ -16,6 +16,21 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
   // Usa a data selecionada (formato "YYYY-MM-DD") ou hoje como fallback
   const dataAgendamento = dataSelecionada || new Date().toISOString().slice(0, 10);
   const [ano, mes, dia] = dataAgendamento.split('-').map(Number);
+  
+  // Debug logs para investigar o problema
+  console.log('🐛 ConsultorioSlots DEBUG:', {
+    consultorio_name: consultorio.name,
+    consultorio_id: consultorio.id,
+    dataSelecionada,
+    dataAgendamento,
+    agendamentos_count: agendamentos?.length || 0,
+    agendamentos_c3: agendamentos?.filter(a => a.consultorio_id === consultorio.id)?.map(a => ({
+      id: a.id,
+      appointment_date: a.appointment_date,
+      status: a.status,
+      duration: a.duration
+    })) || []
+  });
 
   return (
     <div>
