@@ -494,6 +494,7 @@ async def get_consultorio_slots(
             
         # Get operating hours from consultorio data (dynamic)
         horario_info = None
+        consultorio_name = consultorio.get("name", "C1")  # Define sempre
         
         # Check if consultorio has fixed_schedule with valid data
         if (consultorio.get("fixed_schedule") and 
@@ -508,7 +509,6 @@ async def get_consultorio_slots(
             }
         else:
             # Fallback to default hours
-            consultorio_name = consultorio.get("name", "C1")
             default_hours = {
                 "C1": {"inicio": "07:00", "fim": "16:00"},
                 "C2": {"inicio": "07:00", "fim": "16:00"},
