@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function ConsultorioSlots({ consultorio, dataSelecionada, onAgendar, onCancelarAgendamento, onSlotsNeedReload }) {
+const ConsultorioSlots = React.forwardRef(({ consultorio, dataSelecionada, onAgendar, onCancelarAgendamento }, ref) => {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
