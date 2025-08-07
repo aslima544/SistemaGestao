@@ -16,7 +16,21 @@ When a user schedules an appointment for C3 at 14:30, the backend correctly regi
 ✅ RESOLVED - Fixed frontend state synchronization issue
 
 ### Root Cause Found
-The issue was in the `handleCreateAppointment` and `onCancelarAgendamento` functions in App.js. After creating/canceling appointments, the `agendamentos` state was being updated with raw API data, but the ConsultorioSlots component expected processed data with `horario`, `data`, and `duration` fields.
+The issue was a **data structure mismatch** between App.js and ConsultorioSlots.js:
+
+1. **App.js Data Processing**: Functions like `handleCreateAppointment` and `onCancelarAgendamento` process API data and rename `duration_minutes` to `duration`
+2. **ConsultorioSlots.js Expectation**: Component still referenced `a.duration_minutes` (line 50) instead of `a.duration`
+3. **Result**: Duration calculations defaulted to 30 minutes for all appointments, causing incorrect slot occupancy detection
+
+### Solution Implemented
+**Phase 1** - Fixed data processing inconsistencies in App.js:
+- Updated `handleCreateAppointment` (lines 531-560) to process appointment data consistently
+- Updated `onCancelarAgendamento` (lines 562-586) to maintain same data format
+- Both functions now apply the same data transformation as the useEffect (lines 236-244)
+
+**Phase 2** - Fixed field name mismatch in ConsultorioSlots.js:
+- **Critical Fix**: Changed line 50 from `(a.duration_minutes || 30)` to `(a.duration || 30)`
+- This aligns with the processed data structure from App.js
 
 ### Solution Implemented
 Fixed inconsistent data processing in App.js:
