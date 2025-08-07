@@ -47,6 +47,11 @@ function ConsultorioSlots({ consultorio, dataSelecionada, onAgendar, onCancelarA
     }
   };
 
+  // Expor função de recarregar para o componente pai
+  React.useImperativeHandle(onSlotsNeedReload, () => ({
+    recarregar: recarregarSlots
+  }), [consultorio, dataHoje]);
+
   if (!consultorio) return null;
 
   if (loading) {
