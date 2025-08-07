@@ -2108,9 +2108,9 @@ const App = () => {
               return;
             }
 
-            // 4. Valide se a data/hora já passou
+            // 4. Valide se a data/hora já passou (comparação mais precisa)
             const agora = new Date();
-            if (dataHora < agora) {
+            if (dataHora <= agora) {
               alert('Não é possível agendar para um horário que já passou!');
               return;
             }
