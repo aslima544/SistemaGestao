@@ -921,6 +921,16 @@ def main():
     
     tester = ConsultorioAPITester()
     
+    # C3 Slots Time Logic Test Mode
+    if len(sys.argv) > 1 and sys.argv[1] == "--test-c3-slots":
+        print("\n🎯 RUNNING C3 SLOTS TIME LOGIC TEST MODE")
+        if not tester.test_login():
+            print("❌ Login failed - cannot test")
+            return 1
+        
+        success = tester.test_c3_slots_time_logic()
+        return 0 if success else 1
+    
     # URGENT investigation mode for missing 15:30 appointment
     if len(sys.argv) > 1 and sys.argv[1] == "--investigate-1530":
         print("\n🚨 RUNNING URGENT 15:30 INVESTIGATION MODE")
