@@ -233,3 +233,45 @@ The backend is working correctly. The C3 14:30 appointment exists in the databas
 - ✅ Response Format Test: PASSED
 
 **Backend Status**: All systems working correctly. The time comparison logic fix is fully operational and meets all requirements.
+
+## URGENT C3 DATA CLEANUP COMPLETED (2025-08-07 19:16)
+
+### Cleanup Task Summary
+✅ **URGENT DATA CLEANUP SUCCESSFUL** - C3 incorrect appointments removed
+
+### Problem Addressed
+**Issue**: Dashboard showed C3 appointments after 17:00, but C3 only operates 08:00-17:00.
+**Root Cause**: Database contained 9 incorrect appointments scheduled >= 17:00 for C3.
+
+### Cleanup Results
+1. **Total C3 Appointments Found**: 13 appointments
+2. **Incorrect Appointments (>= 17:00)**: 9 appointments
+3. **Correct Appointments (< 17:00)**: 4 appointments
+4. **Successfully Canceled**: 9 incorrect appointments
+5. **Failed Cancellations**: 0
+
+### Detailed Cleanup Actions
+**Appointments Canceled**:
+- 2025-08-05 17:00 (ID: 34a56fc0-5414-4f43-9423-decf4ff18e1d)
+- 2025-08-07 17:30 (ID: b6e26908-cc7d-4d6e-9578-bddc656bd6c6)
+- 2025-08-07 17:45 (ID: c2b455c9-519b-4eff-891b-7ac0d273e100)
+- 2025-08-07 18:00 (ID: c19f91b9-c249-4c7b-8490-2032f7e027fd)
+- 2025-08-07 18:30 (ID: 475e37c0-46e5-4711-a094-621bf471e2f5)
+- 2025-08-07 18:45 (ID: 740c879b-a2ea-414c-886e-babebed3726f)
+- 2025-08-07 19:00 (ID: 9a949c66-1b0e-4151-bc48-ab361fbc1968)
+- 2025-08-07 19:15 (ID: 74c62c99-0e45-43af-a7c2-e1cf057802c1)
+- 2025-08-07 19:30 (ID: 851928b5-cdf7-4e99-a37b-0d328e15661b)
+
+### Verification Results
+✅ **C3 Schedule Clean**: No appointments >= 17:00 remain
+✅ **Dashboard Updated**: C3 shows 0 occupied slots
+✅ **Data Integrity**: Only valid 08:00-16:45 appointments allowed
+✅ **Backend API**: All appointment endpoints working correctly
+
+### Final Status
+- **C3 Consultorio ID**: 0f85e815-9efc-42fa-bdc9-11a924683e03
+- **Operating Hours**: 08:00-17:00 (ends at 17:00, last slot 16:45)
+- **Current Active Appointments**: 0 (clean schedule)
+- **Dashboard Count**: Correct (0 occupied slots for C3)
+
+**Conclusion**: C3 data cleanup completed successfully. All incorrect appointments (>= 17:00) have been canceled. Dashboard now shows accurate counts and C3 schedule is clean for proper testing.
