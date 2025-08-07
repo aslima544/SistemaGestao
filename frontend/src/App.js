@@ -1679,6 +1679,7 @@ const App = () => {
           </button>
         </h3>
         <ConsultorioSlots
+          ref={consultorioSlotsRef}
           consultorio={consultorios.find(c => c.id === consultorioSelecionado)}
           dataSelecionada={dataSelecionada}
           onAgendar={horario =>
