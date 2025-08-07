@@ -13,7 +13,7 @@
 When a user schedules an appointment for C3 at 14:30, the backend correctly registers it and prevents duplicate bookings, but the frontend slot remains visually "green" (available) instead of turning "red" (occupied), requiring manual page refresh.
 
 ### Investigation Status
-✅ RESOLVED - Fixed frontend state synchronization issue
+✅ RESOLVED - Fixed data structure mismatch and field reference issue
 
 ### Root Cause Found
 The issue was a **data structure mismatch** between App.js and ConsultorioSlots.js:
