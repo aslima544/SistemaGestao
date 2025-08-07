@@ -2089,14 +2089,18 @@ const App = () => {
               dataSelecionada: dataSelecionada
             });
             
-            // 1. Monte a string de data/hora completa
-            const dataHoraStr = `${dados.dataAtendimento}T${modalAgendamento.horario}:00`;
-            console.log('🐛 dataHoraStr:', dataHoraStr);
-
-            // 2. Crie o objeto Date
-            const dataHora = new Date(dataHoraStr);
-            console.log('🐛 dataHora object:', dataHora);
-            console.log('🐛 dataHora.toISOString():', dataHora.toISOString());
+            // SOLUÇÃO: Criar data explicitamente sem problemas de timezone
+            const [ano, mes, dia] = dados.dataAtendimento.split('-').map(Number);
+            const [hora, minuto] = modalAgendamento.horario.split(':').map(Number);
+            
+            // Criar data local (sem conversão de timezone)
+            const dataHora = new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
+            
+            console.log('🐛 NOVA LÓGICA:', {
+              ano, mes, dia, hora, minuto,
+              dataHora: dataHora,
+              dataHora_ISO: dataHora.toISOString()
+            });
 
             // 3. Valide se a data é válida
             if (isNaN(dataHora.getTime())) {
