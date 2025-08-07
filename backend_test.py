@@ -521,6 +521,41 @@ class ConsultorioAPITester:
         else:
             print("  ❌ No appointments found at 14:30 or 14:45")
         
+        # Check all appointments for 14:45 regardless of consultorio
+        print(f"\n🔍 SEARCHING ALL APPOINTMENTS FOR 14:45 SLOTS:")
+        print("-" * 50)
+        all_1445_appointments = []
+        for apt in appointments_data:
+            apt_date = apt.get('appointment_date', 'N/A')
+            if apt_date != 'N/A':
+                try:
+                    if isinstance(apt_date, str):
+                        parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
+                    else:
+                        parsed_date = apt_date
+                    
+                    apt_time = parsed_date.strftime('%H:%M')
+                    if apt_time == '14:45':
+                        all_1445_appointments.append({
+                            'time': apt_time,
+                            'date': parsed_date.strftime('%Y-%m-%d'),
+                            'id': apt.get('id', 'N/A'),
+                            'consultorio_id': apt.get('consultorio_id', 'N/A'),
+                            'consultorio_name': apt.get('consultorio_name', 'N/A'),
+                            'status': apt.get('status', 'N/A')
+                        })
+                except:
+                    pass
+        
+        if all_1445_appointments:
+            for apt in all_1445_appointments:
+                day_type = "TODAY" if apt['date'] == today else "TOMORROW" if apt['date'] == tomorrow else "OTHER"
+                print(f"  ✅ Found 14:45 appointment on {apt['date']} ({day_type})")
+                print(f"     Consultorio: {apt['consultorio_name']} (ID: {apt['consultorio_id']})")
+                print(f"     ID: {apt['id']}, Status: {apt['status']}")
+        else:
+            print("  ❌ No 14:45 appointments found in entire system")
+        
         print("\n" + "🔍" * 60)
         print("🔍 INVESTIGATION COMPLETE")
         print("🔍" * 60)
