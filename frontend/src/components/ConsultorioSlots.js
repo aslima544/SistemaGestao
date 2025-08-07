@@ -48,7 +48,7 @@ const ConsultorioSlots = React.forwardRef(({ consultorio, dataSelecionada, onAge
   };
 
   // Expor função de recarregar para o componente pai
-  React.useImperativeHandle(onSlotsNeedReload, () => ({
+  React.useImperativeHandle(ref, () => ({
     recarregar: recarregarSlots
   }), [consultorio, dataHoje]);
 
