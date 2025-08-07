@@ -1274,6 +1274,16 @@ def main():
         
         return 0 if overall_success else 1
     
+    # URGENT cleanup mode for C3 incorrect appointments
+    if len(sys.argv) > 1 and sys.argv[1] == "--cleanup-c3":
+        print("\n🧹 RUNNING URGENT C3 CLEANUP MODE")
+        if not tester.test_login():
+            print("❌ Login failed - cannot cleanup")
+            return 1
+        
+        cleanup_success = tester.cleanup_c3_incorrect_appointments()
+        return 0 if cleanup_success else 1
+    
     # URGENT investigation mode for missing 15:30 appointment
     if len(sys.argv) > 1 and sys.argv[1] == "--investigate-1530":
         print("\n🚨 RUNNING URGENT 15:30 INVESTIGATION MODE")
