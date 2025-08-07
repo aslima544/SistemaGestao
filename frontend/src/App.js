@@ -26,6 +26,11 @@ function ModalAgendamento({ aberto, consultorio, horario, pacientes, doctors, pr
   const [dataAtendimento, setDataAtendimento] = useState(dataSelecionada || new Date().toISOString().slice(0,10));
   const [duration, setDuration] = useState(30);
 
+  // Atualiza a data quando dataSelecionada muda
+  React.useEffect(() => {
+    setDataAtendimento(dataSelecionada || new Date().toISOString().slice(0,10));
+  }, [dataSelecionada]);
+
   const coresProcedimentos = [
   '#fbbf24', // amarelo
   '#60a5fa', // azul
