@@ -2244,10 +2244,18 @@ const App = () => {
         />
       )}
 
-      {editingConsultorio && (
+      {editingConsultorio && editingConsultorio.editType !== 'horario' && (
         <ConsultorioForm
           consultorio={editingConsultorio}
           onSubmit={(data) => handleUpdateConsultorio(editingConsultorio.id, data)}
+          onCancel={() => setEditingConsultorio(null)}
+        />
+      )}
+
+      {editingConsultorio && editingConsultorio.editType === 'horario' && (
+        <HorarioForm
+          consultorio={editingConsultorio}
+          onSubmit={(horarioInicio, horarioFim) => handleUpdateHorario(editingConsultorio.id, horarioInicio, horarioFim)}
           onCancel={() => setEditingConsultorio(null)}
         />
       )}
