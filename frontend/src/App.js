@@ -2082,11 +2082,21 @@ const App = () => {
           dataSelecionada={dataSelecionada}
           onClose={() => setModalAgendamento({ aberto: false, consultorio: null, horario: null })}
           onSubmit={async dados => {
+            // Debug: vamos ver exatamente o que está acontecendo
+            console.log('🐛 DEBUG AGENDAMENTO:', {
+              dataAtendimento: dados.dataAtendimento,
+              horario: modalAgendamento.horario,
+              dataSelecionada: dataSelecionada
+            });
+            
             // 1. Monte a string de data/hora completa
             const dataHoraStr = `${dados.dataAtendimento}T${modalAgendamento.horario}:00`;
+            console.log('🐛 dataHoraStr:', dataHoraStr);
 
             // 2. Crie o objeto Date
             const dataHora = new Date(dataHoraStr);
+            console.log('🐛 dataHora object:', dataHora);
+            console.log('🐛 dataHora.toISOString():', dataHora.toISOString());
 
             // 3. Valide se a data é válida
             if (isNaN(dataHora.getTime())) {
