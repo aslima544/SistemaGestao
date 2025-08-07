@@ -412,6 +412,110 @@ class ConsultorioAPITester:
             self.log_test("Delete Patient", False, details)
             return False
 
+    def test_c3_slots_with_occupied_appointment(self):
+        """Test C3 slots endpoint with a real occupied appointment"""
+        print("\n" + "🏥" * 60)
+        print("🏥 TESTING C3 SLOTS WITH OCCUPIED APPOINTMENT")
+        print("🏥" * 60)
+        
+        # First create a patient and doctor for the test
+        patient_id = self.test_create_patient()
+        doctor_id = self.test_create_doctor()
+        
+        if not patient_id or not doctor_id:
+            self.log_test("C3 Occupied Slots Test Setup", False, "Failed to create patient or doctor")
+            return False
+        
+        # C3 consultorio ID
+        c3_consultorio_id = "0f85e815-9efc-42fa-bdc9-11a924683e03"
+        
+        # Create an appointment for tomorrow at 10:00 AM (to ensure it's in the future)
+        tomorrow = datetime.now() + timedelta(days=1)
+        appointment_date = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
+        test_date = tomorrow.strftime('%Y-%m-%d')
+        
+        appointment_data = {
+            "patient_id": patient_id,
+            "doctor_id": doctor_id,
+            "consultorio_id": c3_consultorio_id,
+            "appointment_date": appointment_date.isoformat() + "Z",
+            "duration_minutes": 30,
+            "notes": "Test appointment for slots verification",
+            "status": "scheduled"
+        }
+        
+        # Create the appointment
+        success, apt_data, details = self.make_request('POST', '/api/appointments', appointment_data, 200)
+        
+        if not success:
+            self.log_test("Create Test Appointment", False, f"{details}")
+            return False
+        
+        appointment_id = apt_data.get('id')
+        self.created_resources['appointments'].append(appointment_id)
+        self.log_test("Create Test Appointment", True, f"Created appointment at 10:00 for {test_date}")
+        
+        # Now test the slots endpoint
+        endpoint = f"/api/consultorios/{c3_consultorio_id}/slots?date={test_date}"
+        success, data, details = self.make_request('GET', endpoint)
+        
+        if not success:
+            self.log_test("C3 Slots with Appointment", False, f"{details}")
+            return False
+        
+        self.log_test("C3 Slots with Appointment", True, f"{details}")
+        
+        # Check if the 10:00 and 10:15 slots are marked as occupied
+        slots = data.get('slots', [])
+        occupied_slots = [slot for slot in slots if slot.get('is_occupied', False)]
+        
+        print(f"\n📊 OCCUPIED SLOTS ANALYSIS:")
+        print(f"🔴 Total occupied slots: {len(occupied_slots)}")
+        
+        # Look for our test appointment slots
+        test_slots = ['10:00', '10:15']  # 30-minute appointment should occupy 2 slots
+        found_occupied_slots = []
+        
+        for slot in slots:
+            if slot['time'] in test_slots and slot.get('is_occupied', False):
+                found_occupied_slots.append(slot['time'])
+                occupancy_info = slot.get('occupancy_info', {})
+                print(f"✅ {slot['time']}: OCCUPIED")
+                print(f"   🆔 Appointment ID: {occupancy_info.get('appointment_id', 'N/A')}")
+                print(f"   👤 Patient: {occupancy_info.get('patient_name', 'N/A')}")
+                print(f"   👨‍⚕️ Doctor: {occupancy_info.get('doctor_name', 'N/A')}")
+                print(f"   📝 Status: {occupancy_info.get('status', 'N/A')}")
+                print(f"   ⏱️ Duration: {occupancy_info.get('duration', 'N/A')} min")
+        
+        # Verify the test
+        expected_occupied = len(test_slots)
+        actual_occupied = len(found_occupied_slots)
+        
+        if actual_occupied == expected_occupied:
+            self.log_test("Appointment Occupancy Detection", True, f"Found {actual_occupied}/{expected_occupied} expected occupied slots")
+            occupancy_working = True
+        else:
+            self.log_test("Appointment Occupancy Detection", False, f"Found {actual_occupied}/{expected_occupied} expected occupied slots")
+            occupancy_working = False
+            
+            # Debug: Show all slots around the test time
+            print(f"\n🔍 DEBUG: All slots around test time:")
+            for slot in slots:
+                if slot['time'] in ['09:45', '10:00', '10:15', '10:30']:
+                    print(f"   {slot['time']}: occupied={slot.get('is_occupied', False)}, past={slot.get('is_past', False)}, available={slot.get('is_available', False)}")
+        
+        # Clean up - cancel the test appointment
+        if appointment_id:
+            cancel_success, _, _ = self.make_request('PUT', f'/api/appointments/{appointment_id}/cancel', expected_status=200)
+            if cancel_success:
+                print(f"✅ Test appointment {appointment_id} canceled successfully")
+            else:
+                print(f"⚠️ Failed to cancel test appointment {appointment_id}")
+        
+        print("🏥" * 60)
+        
+        return occupancy_working
+
     def test_c3_slots_time_logic(self):
         """Test C3 slots endpoint with specific focus on time comparison logic"""
         print("\n" + "🎯" * 60)
