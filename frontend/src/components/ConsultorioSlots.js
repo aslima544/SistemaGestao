@@ -204,6 +204,6 @@ const ConsultorioSlots = React.forwardRef(({ consultorio, dataSelecionada, onAge
       </div>
     </div>
   );
-}
+});
 
 export default ConsultorioSlots;
