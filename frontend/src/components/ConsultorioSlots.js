@@ -32,16 +32,6 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
           let agendamento = null;
           let ocupado = false;
           if (!slotPassado) {
-            // Debug para slot específico 14:30
-            if (horario === '14:30') {
-              console.log(`🎯 Debug 14:30 slot:`, {
-                consultorio_id: consultorio.id,
-                dataAgendamento,
-                agendamentos_for_consultorio: agendamentos.filter(a => a.consultorio_id === consultorio.id),
-                total_agendamentos: agendamentos.length
-              });
-            }
-            
             agendamento = agendamentos.find(a => {
               if (!a.appointment_date) return false;
               if (a.consultorio_id !== consultorio.id) return false;
@@ -60,23 +50,6 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
               const end = start + (a.duration || 30);
 
               const slotTime = sh * 60 + sm;
-              
-              // Debug para slot específico 14:30
-              if (horario === '14:30') {
-                console.log(`🎯 Checking appointment for 14:30:`, {
-                  appointment_date: a.appointment_date,
-                  appointmentDateStr,
-                  dataAgendamento,
-                  appointmentHour,
-                  appointmentMinute,
-                  start,
-                  end,
-                  slotTime,
-                  duration: a.duration,
-                  status: a.status,
-                  overlaps: slotTime >= start && slotTime < end && a.status !== "canceled"
-                });
-              }
 
               return slotTime >= start && slotTime < end && a.status !== "canceled";
             });
