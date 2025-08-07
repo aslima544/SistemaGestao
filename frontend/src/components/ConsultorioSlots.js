@@ -26,16 +26,10 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
     return aptDateStr === dataAgendamento;
   });
   
-  console.log('🐛 ConsultorioSlots:', {
-    consultorio_name: consultorio.name,
-    dataAgendamento,
-    agendamentosC3_total: agendamentosC3.length,
-    agendamentosC3_hoje: agendamentosHoje.length,
-    horarios_ocupados_hoje: agendamentosHoje.map(a => {
-      const date = new Date(a.appointment_date);
-      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-    })
-  });
+  console.log('🐛 HORÁRIOS OCUPADOS HOJE C3:', agendamentosHoje.map(a => {
+    const date = new Date(a.appointment_date);
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} (${a.status})`;
+  }));
 
   return (
     <div>
