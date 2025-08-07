@@ -1048,8 +1048,20 @@ def main():
             print("❌ Login failed - cannot test")
             return 1
         
-        success = tester.test_c3_slots_time_logic()
-        return 0 if success else 1
+        # Test time logic
+        time_logic_success = tester.test_c3_slots_time_logic()
+        
+        # Test occupied appointment detection
+        occupied_test_success = tester.test_c3_slots_with_occupied_appointment()
+        
+        overall_success = time_logic_success and occupied_test_success
+        
+        print(f"\n🎯 OVERALL C3 SLOTS TEST RESULTS:")
+        print(f"✅ Time Logic: {'PASSED' if time_logic_success else 'FAILED'}")
+        print(f"✅ Occupied Detection: {'PASSED' if occupied_test_success else 'FAILED'}")
+        print(f"🎯 Overall: {'PASSED' if overall_success else 'FAILED'}")
+        
+        return 0 if overall_success else 1
     
     # URGENT investigation mode for missing 15:30 appointment
     if len(sys.argv) > 1 and sys.argv[1] == "--investigate-1530":
