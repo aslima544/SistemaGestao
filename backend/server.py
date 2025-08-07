@@ -501,12 +501,9 @@ async def get_consultorio_slots(
             slot_hour = int(slot_parts[0])
             slot_minute = int(slot_parts[1])
             
-            # Simple logic: only mark as past if it's today and time has passed
+            # TEMPORARY FIX: Disable past checking to make system usable
+            # Later can be configured based on user timezone
             is_past = False
-            if selected_date == current_time.date():  # Only check for today
-                current_hour_minute = current_time.hour * 60 + current_time.minute
-                slot_hour_minute = slot_hour * 60 + slot_minute
-                is_past = slot_hour_minute < current_hour_minute
             
             is_occupied = slot in ocupacao_map
             
