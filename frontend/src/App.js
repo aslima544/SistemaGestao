@@ -457,6 +457,22 @@ const App = () => {
     }
   };
 
+  const handleUpdateHorario = async (consultorioId, horarioInicio, horarioFim) => {
+    try {
+      setLoading(true);
+      await axios.put(`/api/consultorios/${consultorioId}/horario?horario_inicio=${horarioInicio}&horario_fim=${horarioFim}`);
+      setEditingConsultorio(null);
+      setShowConsultorioForm(false);
+      fetchDashboardData(); // Refresh consultorio data
+      alert('Horários atualizados com sucesso!');
+    } catch (error) {
+      console.error('Error updating horario:', error);
+      alert('Erro ao atualizar horários.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateConsultorio = async (consultorioId, consultorioData) => {
     try {
       setLoading(true);
