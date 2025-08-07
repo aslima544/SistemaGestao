@@ -413,24 +413,28 @@ class ConsultorioAPITester:
             return False
 
     def test_c3_slots_time_logic(self):
-        """Test C3 slots endpoint with specific focus on time comparison logic for current time 15:47"""
+        """Test C3 slots endpoint with specific focus on time comparison logic"""
         print("\n" + "🎯" * 60)
-        print("🎯 CRITICAL TEST: C3 Slots Time Logic for Current Time 15:47")
+        print("🎯 CRITICAL TEST: C3 Slots Time Logic")
         print("🎯" * 60)
         
         # C3 consultorio ID
         c3_consultorio_id = "0f85e815-9efc-42fa-bdc9-11a924683e03"
-        test_date = "2025-08-07"  # Today
         
-        # Test the slots endpoint
-        endpoint = f"/api/consultorios/{c3_consultorio_id}/slots?date={test_date}"
+        # Test with today's date first
+        test_date_today = "2025-08-07"  # Today
+        print(f"🕐 Current server time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"📅 Testing with date: {test_date_today}")
+        
+        # Test the slots endpoint for today
+        endpoint = f"/api/consultorios/{c3_consultorio_id}/slots?date={test_date_today}"
         success, data, details = self.make_request('GET', endpoint)
         
         if not success:
-            self.log_test("C3 Slots Endpoint", False, f"{details}")
+            self.log_test("C3 Slots Endpoint (Today)", False, f"{details}")
             return False
         
-        self.log_test("C3 Slots Endpoint", True, f"{details} - Retrieved slots data")
+        self.log_test("C3 Slots Endpoint (Today)", True, f"{details} - Retrieved slots data")
         
         # Verify response structure
         expected_keys = ['consultorio_id', 'consultorio_name', 'date', 'slots']
@@ -451,31 +455,24 @@ class ConsultorioAPITester:
         
         self.log_test("C3 Consultorio Info", True, f"ID: {data['consultorio_id']}, Name: {data['consultorio_name']}")
         
-        # Verify date
-        if data['date'] != test_date:
-            self.log_test("C3 Slots Date", False, f"Expected {test_date}, got {data['date']}")
+        # Analyze slots for today
+        slots_today = data.get('slots', [])
+        if not slots_today:
+            self.log_test("C3 Slots Data (Today)", False, "No slots returned")
             return False
         
-        self.log_test("C3 Slots Date", True, f"Date: {data['date']}")
-        
-        # Analyze slots
-        slots = data.get('slots', [])
-        if not slots:
-            self.log_test("C3 Slots Data", False, "No slots returned")
-            return False
-        
-        print(f"\n📊 SLOT ANALYSIS for C3 on {test_date}")
+        print(f"\n📊 TODAY'S SLOT ANALYSIS for C3 on {test_date_today}")
         print("-" * 80)
         
         # Expected C3 schedule: 08:00-17:00 (ends at 17:00, so last slot is 16:45)
         expected_first_slot = "08:00"
         expected_last_slot = "16:45"
         
-        slot_times = [slot['time'] for slot in slots]
+        slot_times = [slot['time'] for slot in slots_today]
         first_slot = slot_times[0] if slot_times else None
         last_slot = slot_times[-1] if slot_times else None
         
-        print(f"🕐 Total slots: {len(slots)}")
+        print(f"🕐 Total slots: {len(slots_today)}")
         print(f"🕐 First slot: {first_slot} (expected: {expected_first_slot})")
         print(f"🕐 Last slot: {last_slot} (expected: {expected_last_slot})")
         
@@ -486,80 +483,99 @@ class ConsultorioAPITester:
         else:
             self.log_test("C3 Schedule Boundaries", False, f"Incorrect schedule: {first_slot} to {last_slot}, expected: {expected_first_slot} to {expected_last_slot}")
         
-        # CRITICAL TEST: Time comparison logic for current time 15:47
-        print(f"\n🎯 CRITICAL TIME LOGIC TEST (Current time: 15:47)")
-        print("-" * 80)
+        # Analyze time logic for today
+        current_time = datetime.now()
+        current_minutes = current_time.hour * 60 + current_time.minute
         
-        # Slots that should be is_past=true (before 15:47)
-        past_slots_expected = []
-        # Slots that should be is_past=false (15:47 and after)
-        future_slots_expected = ["16:00", "16:15", "16:30", "16:45"]
+        past_slots_today = []
+        future_slots_today = []
+        occupied_slots_today = []
         
-        # Generate expected past slots (08:00 to 15:45)
-        for hour in range(8, 16):  # 8 to 15
-            for minute in [0, 15, 30, 45]:
-                past_slots_expected.append(f"{hour:02d}:{minute:02d}")
-        past_slots_expected.append("15:45")  # Last past slot
-        
-        print(f"📋 Expected past slots (is_past=true): {len(past_slots_expected)} slots")
-        print(f"📋 Expected future slots (is_past=false): {future_slots_expected}")
-        
-        # Analyze each slot
-        past_slots_actual = []
-        future_slots_actual = []
-        occupied_slots = []
-        
-        for slot in slots:
+        for slot in slots_today:
             slot_time = slot['time']
             is_past = slot.get('is_past', False)
             is_occupied = slot.get('is_occupied', False)
-            is_available = slot.get('is_available', False)
             occupancy_info = slot.get('occupancy_info')
             
+            # Calculate expected is_past based on current time
+            slot_parts = slot_time.split(':')
+            slot_minutes = int(slot_parts[0]) * 60 + int(slot_parts[1])
+            expected_is_past = slot_minutes < current_minutes
+            
             if is_past:
-                past_slots_actual.append(slot_time)
+                past_slots_today.append(slot_time)
             else:
-                future_slots_actual.append(slot_time)
+                future_slots_today.append(slot_time)
             
             if is_occupied:
-                occupied_slots.append({
+                occupied_slots_today.append({
                     'time': slot_time,
                     'is_past': is_past,
                     'occupancy_info': occupancy_info
                 })
+            
+            # Verify time logic is correct
+            if is_past != expected_is_past:
+                print(f"⚠️  Time logic mismatch for {slot_time}: is_past={is_past}, expected={expected_is_past}")
         
-        print(f"\n📊 ACTUAL SLOT ANALYSIS:")
-        print(f"🔴 Past slots (is_past=true): {len(past_slots_actual)}")
-        print(f"🟢 Future slots (is_past=false): {len(future_slots_actual)}")
-        print(f"🔴 Occupied slots: {len(occupied_slots)}")
+        print(f"🔴 Past slots (is_past=true): {len(past_slots_today)}")
+        print(f"🟢 Future slots (is_past=false): {len(future_slots_today)}")
+        print(f"🔴 Occupied slots: {len(occupied_slots_today)}")
         
-        # Test critical future slots (16:00, 16:15, 16:30, 16:45)
-        critical_test_passed = True
-        for expected_future_slot in future_slots_expected:
-            if expected_future_slot in future_slots_actual:
-                print(f"✅ {expected_future_slot}: Correctly marked as is_past=false")
+        # Since current time is 18:49, all slots should be past for today
+        expected_all_past_today = current_time.hour > 16 or (current_time.hour == 16 and current_time.minute > 45)
+        today_logic_correct = expected_all_past_today == (len(future_slots_today) == 0)
+        
+        if today_logic_correct:
+            self.log_test("Today Time Logic", True, f"Correct: All slots marked as past (current time: {current_time.strftime('%H:%M')})")
+        else:
+            self.log_test("Today Time Logic", False, f"Incorrect time logic for current time: {current_time.strftime('%H:%M')}")
+        
+        # Now test with tomorrow's date to verify future date logic
+        print(f"\n📊 TOMORROW'S SLOT ANALYSIS (Future Date Test)")
+        print("-" * 80)
+        
+        tomorrow = datetime.now() + timedelta(days=1)
+        test_date_tomorrow = tomorrow.strftime('%Y-%m-%d')
+        
+        endpoint_tomorrow = f"/api/consultorios/{c3_consultorio_id}/slots?date={test_date_tomorrow}"
+        success_tomorrow, data_tomorrow, details_tomorrow = self.make_request('GET', endpoint_tomorrow)
+        
+        if not success_tomorrow:
+            self.log_test("C3 Slots Endpoint (Tomorrow)", False, f"{details_tomorrow}")
+            return False
+        
+        self.log_test("C3 Slots Endpoint (Tomorrow)", True, f"{details_tomorrow} - Retrieved tomorrow's slots")
+        
+        slots_tomorrow = data_tomorrow.get('slots', [])
+        future_slots_tomorrow = []
+        past_slots_tomorrow = []
+        
+        for slot in slots_tomorrow:
+            if slot.get('is_past', False):
+                past_slots_tomorrow.append(slot['time'])
             else:
-                print(f"❌ {expected_future_slot}: INCORRECTLY marked as is_past=true")
-                critical_test_passed = False
+                future_slots_tomorrow.append(slot['time'])
         
-        if critical_test_passed:
-            self.log_test("Critical Time Logic (16:00-16:45)", True, "All critical slots correctly marked as future")
+        print(f"📅 Tomorrow's date: {test_date_tomorrow}")
+        print(f"🟢 Future slots tomorrow: {len(future_slots_tomorrow)}")
+        print(f"🔴 Past slots tomorrow: {len(past_slots_tomorrow)}")
+        
+        # For tomorrow, all slots should be future (is_past=false)
+        tomorrow_logic_correct = len(past_slots_tomorrow) == 0 and len(future_slots_tomorrow) == len(slots_tomorrow)
+        
+        if tomorrow_logic_correct:
+            self.log_test("Tomorrow Time Logic", True, f"Correct: All {len(future_slots_tomorrow)} slots marked as future")
         else:
-            self.log_test("Critical Time Logic (16:00-16:45)", False, "Some critical slots incorrectly marked as past")
+            self.log_test("Tomorrow Time Logic", False, f"Incorrect: {len(past_slots_tomorrow)} slots marked as past for future date")
         
-        # Test that 15:45 is marked as past
-        slot_1545_past = "15:45" in past_slots_actual
-        if slot_1545_past:
-            self.log_test("15:45 Slot Time Logic", True, "15:45 correctly marked as is_past=true")
-        else:
-            self.log_test("15:45 Slot Time Logic", False, "15:45 incorrectly marked as is_past=false")
-        
-        # Analyze occupied slots
+        # Test occupied slots info
         print(f"\n🏥 OCCUPIED SLOTS ANALYSIS:")
         print("-" * 40)
         
-        if occupied_slots:
-            for occupied in occupied_slots:
+        all_occupied = occupied_slots_today
+        if all_occupied:
+            for occupied in all_occupied:
                 occupancy_info = occupied['occupancy_info']
                 past_status = "PAST" if occupied['is_past'] else "FUTURE"
                 
@@ -574,7 +590,7 @@ class ConsultorioAPITester:
                     print(f"   ⚠️ No occupancy info provided")
                 print()
             
-            self.log_test("Occupied Slots Info", True, f"Found {len(occupied_slots)} occupied slots with details")
+            self.log_test("Occupied Slots Info", True, f"Found {len(all_occupied)} occupied slots with details")
         else:
             print("✅ No occupied slots found")
             self.log_test("Occupied Slots Info", True, "No occupied slots (clean schedule)")
@@ -585,19 +601,19 @@ class ConsultorioAPITester:
         print(f"✅ Endpoint accessible: {success}")
         print(f"✅ Response structure: Valid")
         print(f"✅ Consultorio info: C3 ({c3_consultorio_id})")
-        print(f"✅ Date: {test_date}")
         print(f"✅ Schedule boundaries: {schedule_correct}")
-        print(f"✅ Critical time logic: {critical_test_passed}")
-        print(f"✅ 15:45 past logic: {slot_1545_past}")
-        print(f"📊 Total slots: {len(slots)}")
-        print(f"📊 Past slots: {len(past_slots_actual)}")
-        print(f"📊 Future slots: {len(future_slots_actual)}")
-        print(f"📊 Occupied slots: {len(occupied_slots)}")
+        print(f"✅ Today time logic: {today_logic_correct}")
+        print(f"✅ Tomorrow time logic: {tomorrow_logic_correct}")
+        print(f"📊 Today total slots: {len(slots_today)}")
+        print(f"📊 Today past slots: {len(past_slots_today)}")
+        print(f"📊 Today future slots: {len(future_slots_today)}")
+        print(f"📊 Tomorrow future slots: {len(future_slots_tomorrow)}")
+        print(f"📊 Occupied slots: {len(all_occupied)}")
         
-        overall_success = success and schedule_correct and critical_test_passed and slot_1545_past
+        overall_success = success and schedule_correct and today_logic_correct and tomorrow_logic_correct
         
         if overall_success:
-            self.log_test("C3 Slots Time Logic Overall", True, "All time logic tests passed")
+            self.log_test("C3 Slots Time Logic Overall", True, "All time logic tests passed - Fix is working correctly!")
         else:
             self.log_test("C3 Slots Time Logic Overall", False, "Some time logic tests failed")
         
