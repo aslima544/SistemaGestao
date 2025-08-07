@@ -88,6 +88,52 @@ User reported: "slot C3 14:30 não atualiza para vermelho após criação do age
 
 **Status**: Problem identified and fixed. Solution targets real-time visual updates without page refresh.
 
+## URGENT INVESTIGATION RESULTS: Missing 15:30 C3 Appointment (2025-08-07 18:30)
+
+### Investigation Summary
+✅ **Backend Database Query Completed** - Comprehensive analysis of missing 15:30 appointment
+
+### Key Findings
+1. **15:30 C3 Appointment DOES NOT EXIST** ❌
+   - **CONFIRMED**: No 15:30 appointment found for C3 on today (2025-08-07)
+   - **System-wide search**: Only 1 appointment at 15:30 found in entire system (different consultorio, different date)
+   - **Found 15:30 appointment**: 2025-08-02 for different consultorio (canceled status)
+
+2. **C3 Appointments for TODAY (2025-08-07)** ✅
+   - **Total found**: 7 appointments for C3 today
+   - **Matches user report**: All expected appointments confirmed
+   - **15:45**: CANCELED (ID: 79cbf446-40d2-4e96-ba96-8f5c3e1516fa)
+   - **17:30**: SCHEDULED (ID: b6e26908-cc7d-4d6e-9578-bddc656bd6c6)
+   - **17:45**: SCHEDULED (ID: c2b455c9-519b-4eff-891b-7ac0d273e100)
+   - **18:00**: SCHEDULED (ID: c19f91b9-c249-4c7b-8490-2032f7e027fd)
+   - **18:30**: SCHEDULED (ID: 475e37c0-46e5-4711-a094-621bf471e2f5)
+   - **18:45**: SCHEDULED (ID: 740c879b-a2ea-414c-886e-babebed3726f)
+   - **19:00**: SCHEDULED (ID: 9a949c66-1b0e-4151-bc48-ab361fbc1968)
+
+3. **Recent C3 Activity Analysis** 📊
+   - **10 recent C3 appointments** created in last 2 days
+   - **No 15:30 appointments** found in recent creation history
+   - **Pattern observed**: Multiple appointments created today, but none at 15:30
+
+4. **Backend API Status** ✅
+   - **All core APIs working**: 15/16 tests passed
+   - **Appointment creation**: Working correctly
+   - **Conflict detection**: Working properly (expected failure in test)
+   - **Authentication**: Working
+   - **Database queries**: Working
+
+### Conclusion
+**DEFINITIVE ANSWER**: The 15:30 C3 appointment for today (2025-08-07) **NEVER EXISTED** in the backend database.
+
+**Possible explanations**:
+1. **Frontend creation failed**: User attempted to create but frontend/backend communication failed
+2. **Validation error**: Appointment creation was rejected due to validation rules
+3. **User error**: User may have selected wrong time or date
+4. **Session timeout**: User's session may have expired during creation
+5. **Network issue**: Request may have failed due to connectivity
+
+**Backend is working correctly** - the issue is likely in the frontend appointment creation process or user interaction flow.
+
 ## CRITICAL DATABASE INVESTIGATION RESULTS (2025-08-07 17:30)
 
 ### Investigation Summary
