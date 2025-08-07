@@ -908,9 +908,15 @@ async def create_appointment(appointment: AppointmentCreate, current_user: dict 
     
     horario_info = horarios_map.get(consultorio_name, {"inicio": "08:00", "fim": "17:00"})
     
-    # Get appointment time
-    apt_hour = appointment.appointment_date.hour
-    apt_minute = appointment.appointment_date.minute
+    # Convert UTC appointment time to local time (GMT-3) for validation
+    utc_dt = appointment.appointment_date
+    if utc_dt.tzinfo is not None:
+        utc_dt = utc_dt.replace(tzinfo=None)
+    
+    # Convert to local time (GMT-3)
+    local_dt = utc_dt + timedelta(hours=-3)
+    apt_hour = local_dt.hour
+    apt_minute = local_dt.minute
     apt_time_minutes = apt_hour * 60 + apt_minute
     
     # Get consultorio operating hours
@@ -923,7 +929,7 @@ async def create_appointment(appointment: AppointmentCreate, current_user: dict 
     if apt_time_minutes < inicio_minutes or apt_time_minutes >= fim_minutes:
         raise HTTPException(
             status_code=400, 
-            detail=f"Horário fora do funcionamento do {consultorio_name}. Funcionamento: {horario_info['inicio']}-{horario_info['fim']}"
+            detail=f"Horário fora do funcionamento do {consultorio_name}. Funcionamento: {horario_info['inicio']}-{horario_info['fim']} (horário local: {local_dt.strftime('%H:%M')})"
         )
     
     # Check for conflicts (same consultorio at same time)
