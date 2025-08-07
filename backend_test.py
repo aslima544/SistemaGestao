@@ -728,7 +728,17 @@ def main():
     
     tester = ConsultorioAPITester()
     
-    # Quick investigation mode for C3 appointments
+    # URGENT investigation mode for missing 15:30 appointment
+    if len(sys.argv) > 1 and sys.argv[1] == "--investigate-1530":
+        print("\n🚨 RUNNING URGENT 15:30 INVESTIGATION MODE")
+        if not tester.test_login():
+            print("❌ Login failed - cannot investigate")
+            return 1
+        
+        tester.investigate_missing_1530_appointment()
+        return 0
+    
+    # Quick investigation mode for C3 appointments (legacy)
     if len(sys.argv) > 1 and sys.argv[1] == "--investigate-c3":
         print("\n🔍 RUNNING C3 INVESTIGATION MODE")
         if not tester.test_login():
