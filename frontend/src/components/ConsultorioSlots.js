@@ -17,19 +17,14 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
   const dataAgendamento = dataSelecionada || new Date().toISOString().slice(0, 10);
   const [ano, mes, dia] = dataAgendamento.split('-').map(Number);
   
-  // Debug logs para investigar o problema
-  const agendamentosC3 = agendamentos?.filter(a => a.consultorio_id === consultorio.id) || [];
-  const agendamentosHoje = agendamentosC3.filter(a => {
-    if (!a.appointment_date) return false;
-    const aptDate = new Date(a.appointment_date);
-    const aptDateStr = aptDate.toISOString().slice(0, 10);
-    return aptDateStr === dataAgendamento;
-  });
-  
-  console.log('🐛 HORÁRIOS OCUPADOS HOJE C3:', agendamentosHoje.map(a => {
-    const date = new Date(a.appointment_date);
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')} (${a.status})`;
-  }));
+  // Remove debug logs - system ready for production
+  // const agendamentosC3 = agendamentos?.filter(a => a.consultorio_id === consultorio.id) || [];
+  // const agendamentosHoje = agendamentosC3.filter(a => {
+  //   if (!a.appointment_date) return false;
+  //   const aptDate = new Date(a.appointment_date);
+  //   const aptDateStr = aptDate.toISOString().slice(0, 10);
+  //   return aptDateStr === dataAgendamento;
+  // });
 
   return (
     <div>
