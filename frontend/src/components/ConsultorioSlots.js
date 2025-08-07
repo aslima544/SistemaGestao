@@ -4,6 +4,15 @@ import { gerarSlots } from '../utils/slots';
 function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgendar, onCancelarAgendamento }) {
   if (!consultorio) return null;
 
+  // Debug logging
+  console.log('🔍 ConsultorioSlots Debug:', {
+    consultorio_name: consultorio.name,
+    consultorio_id: consultorio.id,
+    agendamentos_count: agendamentos?.length || 0,
+    dataSelecionada,
+    agendamentos_sample: agendamentos?.slice(0, 2) || []
+  });
+
   // Pega o horário de início e fim do consultório
   const inicio = consultorio.fixed_schedule
     ? consultorio.fixed_schedule.start
