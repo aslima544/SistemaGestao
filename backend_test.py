@@ -725,6 +725,217 @@ class ConsultorioAPITester:
         
         return overall_success
 
+    def cleanup_c3_incorrect_appointments(self):
+        """URGENT: Clean up incorrect appointments for C3 consultorio (after 17:00)"""
+        print("\n" + "🧹" * 60)
+        print("🧹 URGENT CLEANUP: C3 Incorrect Appointments (After 17:00)")
+        print("🧹 C3 operates 08:00-17:00, appointments after 17:00 are WRONG")
+        print("🧹" * 60)
+        
+        # C3 consultorio ID
+        c3_consultorio_id = "0f85e815-9efc-42fa-bdc9-11a924683e03"
+        
+        # Step 1: Get all appointments
+        success, appointments_data, details = self.make_request('GET', '/api/appointments')
+        
+        if not success:
+            print(f"❌ Failed to fetch appointments: {details}")
+            return False
+        
+        print(f"✅ Successfully fetched {len(appointments_data)} total appointments")
+        
+        # Step 2: Find ALL C3 appointments
+        print(f"\n🔍 STEP 1: Finding ALL C3 appointments")
+        print("-" * 80)
+        
+        c3_appointments = []
+        for apt in appointments_data:
+            if apt.get('consultorio_id') == c3_consultorio_id:
+                apt_date = apt.get('appointment_date', 'N/A')
+                if apt_date != 'N/A':
+                    try:
+                        if isinstance(apt_date, str):
+                            parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
+                        else:
+                            parsed_date = apt_date
+                        
+                        c3_appointments.append({
+                            'id': apt.get('id', 'N/A'),
+                            'time': parsed_date.strftime('%H:%M'),
+                            'date': parsed_date.strftime('%Y-%m-%d'),
+                            'datetime': parsed_date,
+                            'patient_name': apt.get('patient_name', 'N/A'),
+                            'doctor_name': apt.get('doctor_name', 'N/A'),
+                            'status': apt.get('status', 'N/A'),
+                            'duration': apt.get('duration_minutes', 30)
+                        })
+                    except Exception as e:
+                        print(f"⚠️  Error parsing appointment: {e}")
+        
+        print(f"🏥 Found {len(c3_appointments)} total C3 appointments")
+        
+        # Step 3: Identify incorrect appointments (>= 17:00)
+        print(f"\n🔍 STEP 2: Identifying INCORRECT appointments (time >= 17:00)")
+        print("-" * 80)
+        
+        incorrect_appointments = []
+        correct_appointments = []
+        
+        for apt in c3_appointments:
+            time_parts = apt['time'].split(':')
+            hour = int(time_parts[0])
+            minute = int(time_parts[1])
+            
+            # C3 operates 08:00-17:00, so appointments at 17:00 or later are incorrect
+            if hour >= 17:
+                incorrect_appointments.append(apt)
+            else:
+                correct_appointments.append(apt)
+        
+        print(f"❌ INCORRECT appointments (>= 17:00): {len(incorrect_appointments)}")
+        print(f"✅ CORRECT appointments (< 17:00): {len(correct_appointments)}")
+        
+        if incorrect_appointments:
+            print(f"\n📋 INCORRECT APPOINTMENTS TO DELETE:")
+            for i, apt in enumerate(incorrect_appointments, 1):
+                print(f"  {i}. {apt['date']} {apt['time']} - {apt['patient_name']}")
+                print(f"     👨‍⚕️ Doctor: {apt['doctor_name']}")
+                print(f"     📝 Status: {apt['status']}")
+                print(f"     ⏱️ Duration: {apt['duration']} min")
+                print(f"     🆔 ID: {apt['id']}")
+                print()
+        else:
+            print("✅ No incorrect appointments found!")
+        
+        # Step 4: DELETE incorrect appointments
+        if incorrect_appointments:
+            print(f"\n🗑️ STEP 3: DELETING {len(incorrect_appointments)} incorrect appointments")
+            print("-" * 80)
+            
+            deleted_count = 0
+            failed_deletions = []
+            
+            for apt in incorrect_appointments:
+                print(f"🗑️ Deleting appointment {apt['id']} ({apt['date']} {apt['time']})")
+                
+                # Cancel the appointment (set status to canceled)
+                success, data, details = self.make_request(
+                    'PUT', 
+                    f"/api/appointments/{apt['id']}/cancel", 
+                    expected_status=200
+                )
+                
+                if success:
+                    print(f"   ✅ Successfully canceled appointment {apt['id']}")
+                    deleted_count += 1
+                else:
+                    print(f"   ❌ Failed to cancel appointment {apt['id']}: {details}")
+                    failed_deletions.append({
+                        'id': apt['id'],
+                        'time': f"{apt['date']} {apt['time']}",
+                        'error': details
+                    })
+            
+            print(f"\n📊 DELETION RESULTS:")
+            print(f"✅ Successfully canceled: {deleted_count}")
+            print(f"❌ Failed to cancel: {len(failed_deletions)}")
+            
+            if failed_deletions:
+                print(f"\n❌ FAILED DELETIONS:")
+                for failure in failed_deletions:
+                    print(f"  🆔 {failure['id']} ({failure['time']}): {failure['error']}")
+        
+        # Step 5: Verify C3 schedule is clean
+        print(f"\n🔍 STEP 4: VERIFYING C3 schedule is clean")
+        print("-" * 80)
+        
+        # Re-fetch appointments to verify cleanup
+        success, updated_appointments_data, details = self.make_request('GET', '/api/appointments')
+        
+        if not success:
+            print(f"❌ Failed to re-fetch appointments for verification: {details}")
+            return False
+        
+        # Re-analyze C3 appointments
+        updated_c3_appointments = []
+        for apt in updated_appointments_data:
+            if apt.get('consultorio_id') == c3_consultorio_id and apt.get('status') != 'canceled':
+                apt_date = apt.get('appointment_date', 'N/A')
+                if apt_date != 'N/A':
+                    try:
+                        if isinstance(apt_date, str):
+                            parsed_date = datetime.fromisoformat(apt_date.replace('Z', '+00:00'))
+                        else:
+                            parsed_date = apt_date
+                        
+                        updated_c3_appointments.append({
+                            'time': parsed_date.strftime('%H:%M'),
+                            'date': parsed_date.strftime('%Y-%m-%d'),
+                            'patient_name': apt.get('patient_name', 'N/A'),
+                            'status': apt.get('status', 'N/A')
+                        })
+                    except:
+                        pass
+        
+        # Check for remaining incorrect appointments
+        remaining_incorrect = []
+        for apt in updated_c3_appointments:
+            time_parts = apt['time'].split(':')
+            hour = int(time_parts[0])
+            if hour >= 17:
+                remaining_incorrect.append(apt)
+        
+        print(f"🏥 Active C3 appointments after cleanup: {len(updated_c3_appointments)}")
+        print(f"❌ Remaining incorrect appointments (>= 17:00): {len(remaining_incorrect)}")
+        
+        if remaining_incorrect:
+            print(f"\n⚠️ REMAINING INCORRECT APPOINTMENTS:")
+            for apt in remaining_incorrect:
+                print(f"  🕐 {apt['date']} {apt['time']} - {apt['patient_name']} ({apt['status']})")
+        else:
+            print(f"✅ SUCCESS: No appointments >= 17:00 remain!")
+        
+        # Show final clean schedule
+        if updated_c3_appointments:
+            print(f"\n📋 FINAL C3 SCHEDULE (only 08:00-16:45 appointments):")
+            updated_c3_appointments.sort(key=lambda x: (x['date'], x['time']))
+            
+            current_date = None
+            for apt in updated_c3_appointments:
+                if apt['date'] != current_date:
+                    current_date = apt['date']
+                    print(f"\n📅 {current_date}:")
+                
+                print(f"  🕐 {apt['time']} - {apt['patient_name']} ({apt['status']})")
+        else:
+            print(f"📋 C3 schedule is completely empty")
+        
+        # Final summary
+        print(f"\n🧹 CLEANUP SUMMARY")
+        print("=" * 60)
+        print(f"🏥 C3 Consultorio ID: {c3_consultorio_id}")
+        print(f"📊 Total C3 appointments found: {len(c3_appointments)}")
+        print(f"❌ Incorrect appointments (>= 17:00): {len(incorrect_appointments)}")
+        print(f"✅ Correct appointments (< 17:00): {len(correct_appointments)}")
+        if incorrect_appointments:
+            print(f"🗑️ Appointments canceled: {deleted_count}")
+            print(f"❌ Failed cancellations: {len(failed_deletions) if 'failed_deletions' in locals() else 0}")
+        print(f"🏥 Final active C3 appointments: {len(updated_c3_appointments)}")
+        print(f"⚠️ Remaining incorrect appointments: {len(remaining_incorrect)}")
+        
+        cleanup_success = len(remaining_incorrect) == 0
+        
+        if cleanup_success:
+            print(f"🎉 CLEANUP SUCCESSFUL: C3 schedule is now clean (only 08:00-16:45)")
+        else:
+            print(f"⚠️ CLEANUP INCOMPLETE: {len(remaining_incorrect)} incorrect appointments remain")
+        
+        print("\n" + "🧹" * 60)
+        print("🧹 C3 CLEANUP COMPLETE")
+        print("🧹" * 60)
+        
+        return cleanup_success
+
     def investigate_missing_1530_appointment(self):
         """URGENT: Investigate missing 15:30 appointment for C3 today (2025-08-07)"""
         print("\n" + "🚨" * 60)
