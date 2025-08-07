@@ -47,7 +47,7 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
               const appointmentHour = appointmentDate.getHours();
               const appointmentMinute = appointmentDate.getMinutes();
               const start = appointmentHour * 60 + appointmentMinute;
-              const end = start + (a.duration_minutes || 30);
+              const end = start + (a.duration || 30);
 
               const slotTime = sh * 60 + sm;
 
