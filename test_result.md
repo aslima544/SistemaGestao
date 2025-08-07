@@ -13,19 +13,17 @@
 When a user schedules an appointment for C3 at 14:30, the backend correctly registers it and prevents duplicate bookings, but the frontend slot remains visually "green" (available) instead of turning "red" (occupied), requiring manual page refresh.
 
 ### Investigation Status
-✅ COMPLETELY RESOLVED - Fixed all data processing inconsistencies across the application
+✅ COMPLETELY RESOLVED - Fixed date handling bug in appointment creation
 
 ### Root Cause Found
-The issue was **multiple data processing inconsistencies** across different appointment creation flows:
+The issue was a **date handling bug in the ModalAgendamento component**:
 
-1. **App.js useEffect (lines 236-244)**: ✅ Correctly processed data with `duration: a.duration_minutes || 30`
-2. **App.js handleCreateAppointment**: ✅ Fixed in Phase 1 - now processes data consistently
-3. **App.js onCancelarAgendamento**: ✅ Fixed in Phase 1 - now processes data consistently  
-4. **ConsultorioSlots.js line 50**: ✅ Fixed in Phase 2 - changed to use `a.duration` instead of `a.duration_minutes`
-5. **App.js ModalAgendamento onSubmit (line 2114)**: ❌ **CRITICAL MISS** - Raw data was passed without processing
+1. **Frontend Date Selection**: Users could select any date in the interface (`dataSelecionada`)
+2. **Modal Bug**: `ModalAgendamento` component always initialized `dataAtendimento` with today's date (`new Date().toISOString().slice(0,10)`) regardless of user's selected date
+3. **Backend Storage**: Appointments were saved with wrong dates (today instead of selected date)
+4. **Visual Sync Issue**: Since appointments were saved for wrong dates, slots appeared available when they should have been occupied
 
-**The Critical Missing Piece:**
-Line 2114 in the ModalAgendamento onSubmit function was calling `setAgendamentos(agendamentosRes.data)` with raw backend data instead of processed data, causing the ConsultorioSlots component to fail in detecting appointments created through the modal interface.
+**Critical Bug**: Line 26 in ModalAgendamento was hardcoded to today's date instead of using `dataSelecionada` prop.
 
 ### Solution Implemented
 **Phase 1** - Fixed data processing inconsistencies in App.js:
