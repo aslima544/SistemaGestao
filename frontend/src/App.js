@@ -2148,6 +2148,17 @@ const App = () => {
               alert('Consulta agendada com sucesso!');
             } catch (err) {
               console.error('Erro ao salvar agendamento:', err);
+              
+              // Se for erro 409 (conflito), forçar reload dos slots para mostrar estado real
+              if (err.response && err.response.status === 409) {
+                console.log('⚠️ CONFLITO 409 - Recarregando slots para mostrar estado atual...');
+                if (consultorioSlotsRef.current && consultorioSlotsRef.current.recarregar) {
+                  await consultorioSlotsRef.current.recarregar();
+                }
+                alert('❌ Horário já ocupado!\nOs horários foram atualizados para mostrar a situação atual.');
+                return;
+              }
+              
               if (err.response && err.response.data && err.response.data.detail) {
                 // Se for array, junte as mensagens
                 if (Array.isArray(err.response.data.detail)) {
