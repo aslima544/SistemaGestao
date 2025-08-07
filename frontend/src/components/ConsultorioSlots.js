@@ -29,35 +29,12 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
 
   // Criar mapa de agendamentos para busca rápida
   const mapaAgendamentos = {};
-  console.log('🔍 NOVA DEBUG:', {
-    consultorio_name: consultorio.name,
-    consultorio_id: consultorio.id,
-    dataHoje,
-    total_agendamentos: agendamentos.length
-  });
-  
   agendamentos.forEach(agendamento => {
-    // Debug cada agendamento
-    if (agendamento.consultorio_id === consultorio.id) {
-      console.log('🎯 AGENDAMENTO C3:', {
-        id: agendamento.id,
-        appointment_date: agendamento.appointment_date,
-        status: agendamento.status,
-        duration: agendamento.duration
-      });
-    }
-    
     // Só processar agendamentos do consultório atual e da data atual
     if (agendamento.consultorio_id !== consultorio.id) return;
     
     const dataAgendamento = new Date(agendamento.appointment_date);
     const dataStr = dataAgendamento.toISOString().slice(0, 10);
-    
-    console.log('📅 COMPARAÇÃO DATA:', {
-      dataStr,
-      dataHoje,
-      match: dataStr === dataHoje
-    });
     
     if (dataStr !== dataHoje) return;
     
@@ -65,13 +42,6 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
     const horaInicio = dataAgendamento.getHours();
     const minInicio = dataAgendamento.getMinutes();
     const duracao = agendamento.duration || 30;
-    
-    console.log('⏰ SLOTS OCUPADOS:', {
-      horaInicio,
-      minInicio,
-      duracao,
-      status: agendamento.status
-    });
     
     const inicioMinutos = horaInicio * 60 + minInicio;
     const fimMinutos = inicioMinutos + duracao;
@@ -86,12 +56,8 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
         agendamento: agendamento,
         ocupado: agendamento.status !== 'canceled'
       };
-      
-      console.log('🔴 SLOT MARCADO:', slot, 'ocupado:', agendamento.status !== 'canceled');
     }
   });
-  
-  console.log('📊 MAPA FINAL:', mapaAgendamentos);
 
   const slots = gerarSlots();
 
