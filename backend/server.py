@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from pymongo import MongoClient
 from typing import Optional, List
@@ -16,6 +17,11 @@ from datetime import datetime
 load_dotenv()
 
 app = FastAPI(title="Sistema de Gestão de Consultórios", version="1.0.0")
+
+# Serve static files (React frontend)
+if os.path.exists("/app/frontend/build"):
+    app.mount("/static", StaticFiles(directory="/app/frontend/build/static"), name="static")
+    app.mount("/", StaticFiles(directory="/app/frontend/build", html=True), name="frontend")
 
 # CORS Configuration
 app.add_middleware(
