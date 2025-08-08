@@ -6,7 +6,7 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 RUN yarn build
 
-# Use python:3.11-slim - more reliable on Railway platform
+# Use python:3.11-slim - more reliable on Railway platform - updated v2
 FROM python:3.11-slim
 
 # Install system dependencies (Python already included in slim image)
