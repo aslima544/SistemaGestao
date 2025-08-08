@@ -10,13 +10,11 @@ RUN yarn build
 # Use python:3.11-slim - more reliable on Railway platform - updated v2
 FROM python:3.11-slim
 
-# Install system dependencies (Python already included in slim image)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    supervisor \
-    nginx \
-    curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies (split to reduce memory usage)
+RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends supervisor && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends nginx && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 WORKDIR /app
