@@ -6,13 +6,22 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 RUN yarn build
 
+# Use nginx base image to avoid apt-get install issues
+FROM nginx:alpine AS nginx-base
+RUN apk add --no-cache python3 py3-pip supervisor curl
+
 FROM python:3.11-slim
 
-# Install system dependencies in optimized way for Railway
+# Copy nginx from alpine (more reliable than apt-get install)
+COPY --from=nginx-base /usr/sbin/nginx /usr/sbin/nginx
+COPY --from=nginx-base /etc/nginx /etc/nginx
+COPY --from=nginx-base /usr/lib/nginx /usr/lib/nginx
+COPY --from=nginx-base /var/log/nginx /var/log/nginx
+
+# Install only supervisor and curl (smaller install)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    supervisor=4.2.1-1+deb11u1 \
-    nginx=1.18.0-6.1+deb11u3 \
-    curl=7.74.0-1.3+deb11u7 \
+    supervisor \
+    curl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt/archives/*
@@ -33,7 +42,7 @@ COPY supervisord.conf /etc/supervisord.conf
 COPY nginx.conf /etc/nginx/sites-available/default
 
 # Create necessary directories
-RUN mkdir -p /var/log/supervisor /var/log/nginx /var/run
+RUN mkdir -p /var/log/supervisor /var/log/nginx /var/run /run
 
 # Expose port
 EXPOSE 8080
