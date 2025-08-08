@@ -2,14 +2,16 @@ FROM node:18-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
-# Copy package files (handle case where yarn.lock might be missing)
+# Copy package.json first (for caching)
 COPY frontend/package.json ./
-COPY frontend/yarn.lock* ./
 
-# Install dependencies
-RUN yarn install --frozen-lockfile || yarn install
+# Install dependencies without yarn.lock to avoid checksum issues
+RUN yarn install
 
+# Copy rest of frontend code
 COPY frontend/ .
+
+# Build the frontend
 RUN yarn build
 
 # RAILWAY MEMORY FIX - Avoid apt-get completely
