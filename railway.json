@@ -8,6 +8,8 @@
     "startCommand": "supervisord -c /etc/supervisord.conf",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
-    "sleepBeforeRestart": 10
+    "sleepBeforeRestart": 10,
+    "restartPolicyType": "on_failure",
+    "restartPolicyMaxRetries": 3
   }
 }
