@@ -6,14 +6,6 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 RUN yarn build
 
-FROM node:18-alpine AS frontend-build
-
-WORKDIR /app/frontend
-COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install --frozen-lockfile
-COPY frontend/ .
-RUN yarn build
-
 # RAILWAY MEMORY FIX - Avoid apt-get completely
 FROM python:3.11-slim
 
