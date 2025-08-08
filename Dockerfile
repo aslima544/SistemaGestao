@@ -1,8 +1,14 @@
 FROM node:18-alpine AS frontend-build
 
 WORKDIR /app/frontend
-COPY frontend/package.json frontend/yarn.lock ./
-RUN yarn install --frozen-lockfile
+
+# Copy package files (handle case where yarn.lock might be missing)
+COPY frontend/package.json ./
+COPY frontend/yarn.lock* ./
+
+# Install dependencies
+RUN yarn install --frozen-lockfile || yarn install
+
 COPY frontend/ .
 RUN yarn build
 
