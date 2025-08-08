@@ -6,17 +6,19 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 RUN yarn build
 
-# FORCE REBUILD - Railway cache fix - 2024-12-25
-# Use python:3.11-slim - more reliable on Railway platform - updated v2
+FROM node:18-alpine AS frontend-build
+
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/yarn.lock ./
+RUN yarn install --frozen-lockfile
+COPY frontend/ .
+RUN yarn build
+
+# RAILWAY MEMORY FIX - Avoid apt-get completely
 FROM python:3.11-slim
 
-# Install system dependencies (split to reduce memory usage)
-RUN apt-get update && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends supervisor && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends nginx && apt-get clean && rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies
+# Skip apt-get - use Python to serve static files instead of nginx
+# Install Python dependencies only
 WORKDIR /app
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -24,20 +26,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend
 COPY backend/ ./backend/
 
-# Copy built frontend
+# Copy built frontend to be served by Python
 COPY --from=frontend-build /app/frontend/build ./frontend/build
 
-# Copy configuration files
-COPY supervisord.conf /etc/supervisord.conf
-COPY nginx.conf /etc/nginx/sites-available/default
-
-# Create necessary directories and setup nginx
-RUN mkdir -p /var/log/supervisor /var/log/nginx /var/run \
-    && rm -f /etc/nginx/sites-enabled/default \
-    && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+# Create simple start script
+RUN echo '#!/bin/bash\ncd /app/backend && python -m uvicorn server:app --host 0.0.0.0 --port 8080' > /app/start.sh
+RUN chmod +x /app/start.sh
 
 # Expose port
 EXPOSE 8080
 
-# Start supervisor
-CMD ["supervisord", "-c", "/etc/supervisord.conf"]
+# Start backend directly (serve frontend via Python static files)
+CMD ["/app/start.sh"]
