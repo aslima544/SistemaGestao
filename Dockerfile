@@ -6,6 +6,7 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 RUN yarn build
 
+# FORCE REBUILD - Railway cache fix - 2024-12-25
 # Use python:3.11-slim - more reliable on Railway platform - updated v2
 FROM python:3.11-slim
 
