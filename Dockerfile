@@ -1,17 +1,18 @@
+# DOCKERFILE UPDATED - 2024-12-25 - NO YARN LOCK VERSION 3.0
 FROM node:18-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
-# Copy package.json first (for caching)
+# CRITICAL FIX: Only copy package.json, NO yarn.lock
 COPY frontend/package.json ./
 
-# Install dependencies without yarn.lock to avoid checksum issues
+# Install without yarn.lock to avoid Railway checksum errors  
 RUN yarn install
 
-# Copy rest of frontend code
+# Copy frontend source code
 COPY frontend/ .
 
-# Build the frontend
+# Build frontend
 RUN yarn build
 
 # RAILWAY MEMORY FIX - Avoid apt-get completely
