@@ -8,12 +8,14 @@ RUN yarn build
 
 FROM python:3.11-slim
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    supervisor \
-    nginx \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies in optimized way for Railway
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    supervisor=4.2.1-1+deb11u1 \
+    nginx=1.18.0-6.1+deb11u3 \
+    curl=7.74.0-1.3+deb11u7 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/archives/*
 
 # Install Python dependencies
 WORKDIR /app
