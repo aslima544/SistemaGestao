@@ -1,14 +1,11 @@
 {
   "build": {
-    "builder": "DOCKERFILE",
-    "buildCommand": "echo 'Building with extended timeout'",
-    "watchPatterns": ["**/*.py", "**/*.js", "**/*.json"]
+    "builder": "DOCKERFILE"
   },
   "deploy": {
-    "startCommand": "supervisord -c /etc/supervisord.conf",
+    "startCommand": "/app/start.sh",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
-    "sleepBeforeRestart": 10,
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 3
   }
