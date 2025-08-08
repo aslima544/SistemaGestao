@@ -6,33 +6,21 @@ RUN yarn install --frozen-lockfile
 COPY frontend/ .
 RUN yarn build
 
-# Use ubuntu base which has better package management for Railway
-FROM ubuntu:22.04
+# Use python:3.11-slim - more reliable on Railway platform
+FROM python:3.11-slim
 
-# Avoid interactive prompts during package installation
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install all dependencies in single layer with timeout optimization
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    python3-venv \
+# Install system dependencies (Python already included in slim image)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     supervisor \
     nginx \
     curl \
-    ca-certificates \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/cache/apt/archives/*
-
-# Create python3 symlink
-RUN ln -s /usr/bin/python3 /usr/bin/python
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 WORKDIR /app
 COPY backend/requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy backend
 COPY backend/ ./backend/
@@ -45,9 +33,9 @@ COPY supervisord.conf /etc/supervisord.conf
 COPY nginx.conf /etc/nginx/sites-available/default
 
 # Create necessary directories and setup nginx
-RUN mkdir -p /var/log/supervisor /var/log/nginx /var/run /run && \
-    rm -f /etc/nginx/sites-enabled/default && \
-    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+RUN mkdir -p /var/log/supervisor /var/log/nginx /var/run \
+    && rm -f /etc/nginx/sites-enabled/default \
+    && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
 # Expose port
 EXPOSE 8080
