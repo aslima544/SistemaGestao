@@ -245,4 +245,6 @@ async def startup_event():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
+    port = int(os.getenv("PORT", 8000))
+    print(f"🚀 Iniciando servidor na porta {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
