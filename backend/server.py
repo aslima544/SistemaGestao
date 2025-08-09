@@ -182,6 +182,19 @@ def init_database():
     return db is not None
 
 # Simple health check that doesn't require database
+@app.get("/")
+async def root():
+    """Root endpoint - redirect info"""
+    return {
+        "message": "Sistema de Gestão de Consultórios", 
+        "status": "running",
+        "endpoints": {
+            "health": "/api/health",
+            "debug": "/api/debug-config",
+            "login": "/api/auth/login"
+        }
+    }
+
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint - doesn't require database"""
