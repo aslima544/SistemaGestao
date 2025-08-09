@@ -1,12 +1,8 @@
 {
-  "name": "sistema-gestao-consultorios",
-  "version": "1.0.0",
-  "description": "Sistema de Gestão de Consultórios - Backend e Frontend",
+  "name": "sistema-consultorio",
   "scripts": {
-    "start": "uvicorn backend.server:app --host 0.0.0.0 --port $PORT",
-    "dev": "uvicorn backend.server:app --reload --host 0.0.0.0 --port 8000"
+    "start": "python backend/server_minimal.py"
   },
-  "dependencies": {},
   "engines": {
     "python": "3.11"
   }
