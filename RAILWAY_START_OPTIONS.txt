@@ -1,0 +1,13 @@
+# Alternativas de comando para Railway
+
+# Opção 1 (preferida): Python module
+web: python -m uvicorn backend.server_minimal:app --host 0.0.0.0 --port $PORT
+
+# Opção 2: Script direto
+# web: python backend/server_minimal.py
+
+# Opção 3: Com PATH explícito
+# web: /usr/local/bin/python -m uvicorn backend.server_minimal:app --host 0.0.0.0 --port $PORT
+
+# Opção 4: Script personalizado
+# web: bash start.sh
