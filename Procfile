@@ -1,1 +1,1 @@
-web: python backend/server_minimal.py
+web: python backend/server.py
