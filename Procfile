@@ -1,1 +1,1 @@
-web: python -m uvicorn backend.server_minimal:app --host 0.0.0.0 --port $PORT
+web: python backend/server_minimal.py
