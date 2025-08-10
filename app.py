@@ -199,10 +199,15 @@ def root():
     from fastapi.responses import HTMLResponse
     return HTMLResponse(content=html_content)
 
-@app.get("/login")
-def login_page():
-    """Redirect to main page since we serve HTML directly"""
-    return {"message": "Use the root endpoint / for login page"}
+@app.get("/test")
+def test_new_version():
+    """Endpoint para testar se nova versão está rodando"""
+    return {
+        "version": "NEW_VERSION_WITH_HTML",
+        "timestamp": datetime.utcnow(),
+        "port": os.getenv("PORT", "unknown"),
+        "message": "Se você está vendo isso, a nova versão está funcionando!"
+    }
 
 @app.get("/api/health")
 def health():
