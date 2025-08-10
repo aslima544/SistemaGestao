@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 from pymongo import MongoClient
 from datetime import datetime, timedelta
@@ -20,9 +19,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Config
-MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://admin:senha45195487@cluster0.8skwoca.mongodb.net/sistema_consultorio?retryWrites=true&w=majority&appName=Cluster0")
-SECRET_KEY = os.getenv("SECRET_KEY", "secret-key-consultorio")
+# CONFIGURAÇÃO FIXA - SEMPRE ATLAS EM PRODUÇÃO
+if os.getenv("PORT"):  # Railway sempre tem PORT
+    print("🚂 RAILWAY DETECTADO - Usando Atlas")
+    MONGO_URL = "mongodb+srv://admin:senha45195487@cluster0.8skwoca.mongodb.net/sistema_consultorio?retryWrites=true&w=majority&appName=Cluster0"
+    DB_NAME = "sistema_consultorio"
+else:
+    print("💻 LOCAL - Usando localhost")
+    MONGO_URL = "mongodb://localhost:27017"
+    DB_NAME = "consultorio_db"
+
+print(f"🌐 MONGO: {MONGO_URL[:50]}...")
+print(f"🗄️ DATABASE: {DB_NAME}")
+
+SECRET_KEY = "secret-consultorio-2025"
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Database (lazy init)
@@ -33,9 +43,11 @@ def init_db():
     global client, db
     if client is None:
         try:
+            print(f"🔌 Conectando: {MONGO_URL[:50]}...")
             client = MongoClient(MONGO_URL, serverSelectionTimeoutMS=5000)
             client.admin.command('ping')
-            db = client["sistema_consultorio"]
+            db = client[DB_NAME]
+            print("✅ MongoDB conectado!")
             
             # Create admin if not exists
             if not db.users.find_one({"username": "admin"}):
@@ -44,6 +56,7 @@ def init_db():
                     "username": "admin",
                     "password_hash": pwd_context.hash("admin123"),
                     "role": "admin",
+                    "email": "admin@consultorio.com",
                     "created_at": datetime.utcnow()
                 }
                 db.users.insert_one(admin_data)
@@ -60,12 +73,23 @@ class LoginRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {"message": "Sistema de Consultórios", "status": "running"}
+    return {
+        "message": "Sistema de Consultórios", 
+        "status": "running",
+        "database": DB_NAME,
+        "mongo_type": "Atlas" if "mongodb+srv" in MONGO_URL else "Local"
+    }
 
 @app.get("/api/health")
 def health():
     db_ok = init_db()
-    return {"status": "healthy", "database": db_ok, "time": datetime.utcnow()}
+    return {
+        "status": "healthy", 
+        "database_connected": db_ok, 
+        "database_name": DB_NAME,
+        "mongo_url": MONGO_URL[:50] + "...",
+        "time": datetime.utcnow()
+    }
 
 @app.post("/api/auth/login")
 def login(req: LoginRequest):
