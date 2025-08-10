@@ -21,11 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
-try:
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-except:
-    print("⚠️ Static directory not found")
+# Static files mounting removed - using inline HTML instead
 
 # CONFIGURAÇÃO FIXA - SEMPRE ATLAS EM PRODUÇÃO
 if os.getenv("PORT"):  # Railway sempre tem PORT
