@@ -183,13 +183,34 @@ const App = () => {
     horario: null,
   });
   
+  // Função para buscar usuário atual
+  const fetchCurrentUser = React.useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await axios.get('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCurrentUser(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar usuário atual:', error);
+        localStorage.removeItem('token');
+      }
+    }
+  }, []);
+
+  // Effect para verificar usuário logado
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
   // Set auth token
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchCurrentUser();
     }
-  }, [token]);
+  }, [token, fetchCurrentUser]);
 
   // Buscar procedimentos ao abrir o app
   useEffect(() => {
