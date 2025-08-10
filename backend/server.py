@@ -806,6 +806,22 @@ async def create_appointment(appointment: AppointmentCreate, current_user: dict 
     if appointment_utc < datetime.utcnow():
         raise HTTPException(status_code=400, detail="Não é possível agendar para um horário que já passou.")
     
+    # Verificação de feriados (lista básica 2025)
+    feriados_2025 = [
+        "2025-01-01",  # Confraternização Universal
+        "2025-04-21",  # Tiradentes  
+        "2025-05-01",  # Dia do Trabalhador
+        "2025-09-07",  # Independência do Brasil
+        "2025-10-12",  # Nossa Senhora Aparecida
+        "2025-11-02",  # Finados
+        "2025-11-15",  # Proclamação da República
+        "2025-12-25",  # Natal
+    ]
+    
+    data_agendamento = appointment_utc.strftime("%Y-%m-%d")
+    if data_agendamento in feriados_2025:
+        raise HTTPException(status_code=400, detail=f"Unidade fechada no feriado de {data_agendamento}. Selecione outro dia.")
+    
     # Check if doctor exists
     doctor = db.doctors.find_one({"id": appointment.doctor_id})
     if not doctor:
