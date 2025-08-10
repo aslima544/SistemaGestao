@@ -1,0 +1,10 @@
+# CONFIGURAÇÃO PARA RAILWAY - ADICIONE ESTAS VARIÁVEIS:
+
+CI=false
+GENERATE_SOURCEMAP=false  
+REACT_APP_BACKEND_URL=https://web-production-7c0af.up.railway.app
+
+# EXPLICAÇÃO:
+# CI=false -> Desabilita tratamento de warnings como erros
+# GENERATE_SOURCEMAP=false -> Economiza memória no build
+# REACT_APP_BACKEND_URL -> URL do backend funcionando
