@@ -81,21 +81,128 @@ class LoginRequest(BaseModel):
 
 @app.get("/")
 def root():
-    """Redirect to login page if it exists, otherwise show API info"""
-    try:
-        return FileResponse("static/index.html")
-    except:
-        return {
-            "message": "Sistema de Consultórios", 
-            "status": "running",
-            "database": DB_NAME,
-            "mongo_type": "Atlas" if "mongodb+srv" in MONGO_URL else "Local",
-            "endpoints": {
-                "health": "/api/health",
-                "login": "/api/auth/login",
-                "web_login": "/login (se disponível)"
+    """Serve HTML login page directly"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Sistema de Gestão - Login</title>
+        <meta charset="utf-8">
+        <style>
+            body { 
+                font-family: Arial, sans-serif; 
+                max-width: 400px; 
+                margin: 50px auto; 
+                background: #f0f2f5;
+                padding: 20px;
             }
-        }
+            .container {
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            h1 { color: #1877f2; text-align: center; margin-bottom: 30px; }
+            input { 
+                width: 100%; 
+                padding: 12px; 
+                margin: 8px 0; 
+                border: 1px solid #ddd; 
+                border-radius: 4px;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            button { 
+                width: 100%; 
+                padding: 12px; 
+                background: #1877f2; 
+                color: white; 
+                border: none; 
+                border-radius: 4px; 
+                cursor: pointer;
+                font-size: 16px;
+                margin-top: 10px;
+            }
+            button:hover { background: #166fe5; }
+            .result { 
+                margin-top: 20px; 
+                padding: 15px; 
+                border-radius: 4px;
+                display: none;
+            }
+            .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+            .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; margin-bottom: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🏥 Sistema de Gestão</h1>
+            
+            <div class="info">
+                <strong>Credenciais de teste:</strong><br>
+                Usuário: <strong>admin</strong><br>
+                Senha: <strong>admin123</strong>
+            </div>
+            
+            <form onsubmit="return login(event)">
+                <input type="text" id="username" placeholder="Nome de usuário" value="admin" required>
+                <input type="password" id="password" placeholder="Senha" value="admin123" required>
+                <button type="submit">🔐 Entrar no Sistema</button>
+            </form>
+            
+            <div id="result" class="result"></div>
+        </div>
+
+        <script>
+            async function login(event) {
+                event.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const resultDiv = document.getElementById('result');
+                
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result info';
+                resultDiv.innerHTML = '⏳ Fazendo login...';
+                
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        resultDiv.className = 'result success';
+                        resultDiv.innerHTML = `
+                            <strong>✅ Login realizado com sucesso!</strong><br><br>
+                            👤 Usuário: <strong>${username}</strong><br>
+                            🔑 Token gerado: <code>${data.access_token.substring(0, 30)}...</code><br><br>
+                            <em>Sistema funcionando perfeitamente!</em>
+                        `;
+                    } else {
+                        resultDiv.className = 'result error';
+                        resultDiv.innerHTML = `❌ <strong>Erro:</strong> ${data.detail || 'Credenciais inválidas'}`;
+                    }
+                } catch (error) {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ <strong>Erro de conexão:</strong> ${error.message}`;
+                }
+                
+                return false;
+            }
+        </script>
+    </body>
+    </html>
+    """
+    
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html_content)
 
 @app.get("/login")
 def login_page():
