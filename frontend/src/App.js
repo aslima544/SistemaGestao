@@ -256,13 +256,12 @@ const App = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const [statsRes, patientsRes, doctorsRes, consultoriosRes, usersRes, appointmentsRes, weeklyRes] = await Promise.all([
+      const [statsRes, patientsRes, doctorsRes, consultoriosRes, usersRes, weeklyRes] = await Promise.all([
         axios.get('/api/dashboard/stats'),
         axios.get('/api/patients'),
         axios.get('/api/doctors'),
         axios.get('/api/consultorios'),
         axios.get('/api/users'),
-        axios.get('/api/appointments'),
         axios.get('/api/consultorios/weekly-schedule')
       ]);
       
@@ -271,7 +270,6 @@ const App = () => {
       setDoctors(doctorsRes.data);
       setConsultorios(consultoriosRes.data);
       setUsers(usersRes.data);
-      setAppointments(appointmentsRes.data);
       setWeeklySchedule(weeklyRes.data);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
