@@ -23,29 +23,6 @@ function ModalAgendamento({ aberto, consultorio, horario, pacientes, doctors, pr
   const [dataAtendimento, setDataAtendimento] = useState(new Date().toISOString().slice(0,10));
   const [duration, setDuration] = useState(30);
 
-  const coresProcedimentos = [
-  '#fbbf24', // amarelo
-  '#60a5fa', // azul
-  '#34d399', // verde
-  '#f87171', // vermelho
-  '#a78bfa', // roxo
-  '#f472b6', // rosa
-  '#facc15', // amarelo ouro
-  '#38bdf8', // azul claro
-  '#4ade80', // verde claro
-  '#fca5a5', // vermelho claro
-  '#c084fc', // lilás
-  '#fdba74', // laranja claro
-  '#a3e635', // verde limão
-  '#fcd34d', // amarelo pastel
-  '#818cf8', // azul violeta
-  '#f9a8d4', // rosa claro
-  '#fbb6ce', // rosa bebê
-  '#bef264', // verde limão claro
-  '#fef08a', // amarelo claro
-  '#a1a1aa', // cinza
-];
-
   if (!aberto) return null;
 
   return (
