@@ -202,11 +202,8 @@ def root():
 
 @app.get("/login")
 def login_page():
-    """Serve login page"""
-    try:
-        return FileResponse("static/index.html")
-    except:
-        raise HTTPException(404, "Login page not found")
+    """Redirect to main page since we serve HTML directly"""
+    return {"message": "Use the root endpoint / for login page"}
 
 @app.get("/api/health")
 def health():
