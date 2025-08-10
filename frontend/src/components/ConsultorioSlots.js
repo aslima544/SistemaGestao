@@ -17,51 +17,6 @@ function ConsultorioSlots({ consultorio, agendamentos, dataSelecionada, onAgenda
   const dataAgendamento = dataSelecionada || new Date().toISOString().slice(0, 10);
   const [ano, mes, dia] = dataAgendamento.split('-').map(Number);
 
-  // Verifica se é final de semana (sábado = 6, domingo = 0)
-  const dataVerificacao = new Date(ano, mes - 1, dia);
-  const diaSemana = dataVerificacao.getDay();
-  const isFinalSemana = diaSemana === 0 || diaSemana === 6; // domingo = 0, sábado = 6
-
-  // Lista de feriados (formato YYYY-MM-DD) - pode ser expandida
-  const feriados = [
-    '2025-01-01', // Confraternização Universal
-    '2025-04-21', // Tiradentes
-    '2025-05-01', // Dia do Trabalhador
-    '2025-09-07', // Independência do Brasil
-    '2025-10-12', // Nossa Senhora Aparecida
-    '2025-11-02', // Finados
-    '2025-11-15', // Proclamação da República
-    '2025-12-25', // Natal
-    // Adicionar outros feriados locais conforme necessário
-  ];
-  
-  const isFeriado = feriados.includes(dataAgendamento);
-  const isDiaIndisponivel = isFinalSemana || isFeriado;
-
-  // Mostrar aviso se for dia indisponível
-  if (isDiaIndisponivel) {
-    const motivoIndisponibilidade = isFeriado ? 'feriado' : 'final de semana';
-    return (
-      <div>
-        <h3>Horários do {consultorio.name}</h3>
-        <div style={{ 
-          padding: '20px', 
-          backgroundColor: '#fef3c7', 
-          border: '1px solid #f59e0b',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
-          <p style={{ margin: 0, color: '#92400e', fontWeight: 'bold' }}>
-            ⚠️ Unidade fechada em {motivoIndisponibilidade}
-          </p>
-          <p style={{ margin: '8px 0 0 0', color: '#92400e', fontSize: '14px' }}>
-            Selecione um dia útil (segunda a sexta-feira) para agendar consultas.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div>
       <h3>Horários do {consultorio.name}</h3>
