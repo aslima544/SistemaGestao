@@ -31,43 +31,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Database Configuration
+# Database Configuration - FORÇADO PARA RAILWAY
 print("🔍 Verificando variáveis de ambiente...")
 print(f"MONGO_URL exists: {'MONGO_URL' in os.environ}")
 print(f"DATABASE_URL exists: {'DATABASE_URL' in os.environ}")
 
-# Get the MongoDB URL with better validation
-MONGO_URL = (os.getenv("MONGO_URL") or 
-             os.getenv("DATABASE_URL") or 
-             os.getenv("MONGODB_URI") or "").strip()
-
-print(f"🔍 MONGO_URL valor bruto: '{MONGO_URL}'")
-print(f"🔍 MONGO_URL length: {len(MONGO_URL)}")
+# FORÇA ATLAS EM PRODUÇÃO (detecta Railway pela porta ou env)
+if os.getenv("PORT") or os.getenv("RAILWAY_ENVIRONMENT"):
+    print("🚂 Railway detectado - FORÇANDO Atlas connection")
+    MONGO_URL = "mongodb+srv://admin:senha45195487@cluster0.8skwoca.mongodb.net/sistema_consultorio?retryWrites=true&w=majority&appName=Cluster0"
+    print("🔥 FORÇADO: Atlas connection configurada")
+else:
+    # Local development
+    MONGO_URL = (os.getenv("MONGO_URL") or 
+                 os.getenv("DATABASE_URL") or 
+                 os.getenv("MONGODB_URI") or "mongodb://localhost:27017").strip()
 
 DATABASE_NAME = os.getenv("DATABASE_NAME", "sistema_consultorio")
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-for-jwt-tokens-consultorio")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "120"))
 
-# Validation and fallback with detailed logging
-if MONGO_URL and MONGO_URL.startswith(('mongodb://', 'mongodb+srv://')):
-    print(f"✅ MONGO_URL válida: {MONGO_URL[:50]}...")
-elif MONGO_URL:
-    print(f"❌ URI inválida! Valor recebido: '{MONGO_URL}'")
-    print("🔄 Usando fallback para Atlas...")
-    MONGO_URL = "mongodb+srv://admin:senha45195487@cluster0.8skwoca.mongodb.net/sistema_consultorio?retryWrites=true&w=majority&appName=Cluster0"
-    print(f"✅ Fallback configurado: {MONGO_URL[:50]}...")
-else:
-    print("❌ NENHUMA variável de MongoDB encontrada ou está vazia!")
-    print(f"💡 Todas as variáveis de ambiente:")
-    for key in sorted(os.environ.keys()):
-        if any(keyword in key.upper() for keyword in ['MONGO', 'DATABASE', 'DB']):
-            print(f"    {key} = {os.environ[key][:50]}...")
-    
-    print("🔄 Usando fallback para Atlas...")
-    MONGO_URL = "mongodb+srv://admin:senha45195487@cluster0.8skwoca.mongodb.net/sistema_consultorio?retryWrites=true&w=majority&appName=Cluster0"
-    print(f"✅ Fallback configurado: {MONGO_URL[:50]}...")
-
+print(f"🔍 MONGO_URL valor final: {MONGO_URL[:50]}...")
+print(f"🔍 DATABASE_NAME: {DATABASE_NAME}")
 print(f"🌐 URL FINAL sendo usada: {MONGO_URL[:50]}...")
 
 # Global variables for database (initialized later)
