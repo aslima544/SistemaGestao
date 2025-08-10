@@ -298,8 +298,6 @@ const App = () => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
       await fetchCurrentUser();
-      // Carregar dados do dashboard após login bem-sucedido
-      await fetchDashboardData();
     } catch (error) {
       console.error('Login error:', error);
       alert('Erro no login. Verifique suas credenciais.');
