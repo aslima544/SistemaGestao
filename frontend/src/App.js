@@ -211,6 +211,13 @@ const App = () => {
     }
   }, [token, fetchCurrentUser]);
 
+  // Carregar dados do dashboard quando usuário for autenticado
+  useEffect(() => {
+    if (currentUser) {
+      fetchDashboardData();
+    }
+  }, [currentUser]);
+
   // Buscar procedimentos ao abrir o app
   useEffect(() => {
     fetchProcedimentos();
