@@ -1055,4 +1055,7 @@ async def init_railway():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    import os
+    # Use Railway's PORT environment variable or fallback to 8001 for local
+    port = int(os.getenv("PORT", 8001))
+    uvicorn.run(app, host="0.0.0.0", port=port)
