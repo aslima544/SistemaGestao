@@ -444,22 +444,6 @@ const App = () => {
     }
   };
 
-  const handleDeleteConsultorio = async (consultorioId) => {
-    if (window.confirm('Tem certeza que deseja excluir este consultório?')) {
-      try {
-        setLoading(true);
-        await axios.delete(`/api/consultorios/${consultorioId}`);
-        fetchDashboardData();
-        alert('Consultório excluído com sucesso!');
-      } catch (error) {
-        console.error('Error deleting consultorio:', error);
-        alert('Erro ao excluir consultório.');
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   // Doctor CRUD operations
   const handleCreateDoctor = async (doctorData) => {
     try {
