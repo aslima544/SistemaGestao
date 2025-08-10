@@ -189,7 +189,7 @@ const App = () => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       fetchCurrentUser();
     }
-  }, [token]);
+  }, [token, fetchCurrentUser]);
 
   // Buscar procedimentos ao abrir o app
   useEffect(() => {
