@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from pymongo import MongoClient
 from datetime import datetime, timedelta
@@ -18,6 +20,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files
+try:
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+except:
+    print("⚠️ Static directory not found")
 
 # CONFIGURAÇÃO FIXA - SEMPRE ATLAS EM PRODUÇÃO
 if os.getenv("PORT"):  # Railway sempre tem PORT
@@ -73,12 +81,29 @@ class LoginRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return {
-        "message": "Sistema de Consultórios", 
-        "status": "running",
-        "database": DB_NAME,
-        "mongo_type": "Atlas" if "mongodb+srv" in MONGO_URL else "Local"
-    }
+    """Redirect to login page if it exists, otherwise show API info"""
+    try:
+        return FileResponse("static/index.html")
+    except:
+        return {
+            "message": "Sistema de Consultórios", 
+            "status": "running",
+            "database": DB_NAME,
+            "mongo_type": "Atlas" if "mongodb+srv" in MONGO_URL else "Local",
+            "endpoints": {
+                "health": "/api/health",
+                "login": "/api/auth/login",
+                "web_login": "/login (se disponível)"
+            }
+        }
+
+@app.get("/login")
+def login_page():
+    """Serve login page"""
+    try:
+        return FileResponse("static/index.html")
+    except:
+        raise HTTPException(404, "Login page not found")
 
 @app.get("/api/health")
 def health():
