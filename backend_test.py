@@ -522,7 +522,13 @@ class ConsultorioAPITester:
             print("❌ Health check failed - stopping tests")
             return False
         
+        # Test system endpoints (before authentication)
+        print("\n🔧 Testing System Endpoints...")
+        self.test_debug_config()
+        self.test_init_railway()
+        
         # Test authentication
+        print("\n🔐 Testing Authentication...")
         if not self.test_login():
             print("❌ Login failed - stopping tests")
             return False
@@ -531,7 +537,20 @@ class ConsultorioAPITester:
             print("❌ Get current user failed")
             return False
         
+        # Test user operations
+        print("\n👥 Testing User Operations...")
+        self.test_get_users()
+        
+        # Test procedimentos operations (CRITICAL - was failing in production)
+        print("\n💊 Testing Procedimentos Operations...")
+        procedimento_success, procedimentos_data = self.test_get_procedimentos()
+        procedimento_id = self.test_create_procedimento()
+        if procedimento_id:
+            self.test_update_procedimento(procedimento_id)
+            self.test_delete_procedimento(procedimento_id)
+        
         # Test patient operations
+        print("\n🏥 Testing Patient Operations...")
         patient_id = self.test_create_patient()
         if not patient_id:
             print("❌ Patient creation failed - stopping patient tests")
@@ -541,6 +560,7 @@ class ConsultorioAPITester:
             self.test_update_patient(patient_id)
         
         # Test doctor operations
+        print("\n👨‍⚕️ Testing Doctor Operations...")
         doctor_id = self.test_create_doctor()
         if not doctor_id:
             print("❌ Doctor creation failed - stopping doctor tests")
@@ -549,11 +569,14 @@ class ConsultorioAPITester:
             self.test_get_doctor_by_id(doctor_id)
         
         # Test consultorio operations
+        print("\n🏢 Testing Consultorio Operations...")
         consultorio_success, consultorios_data = self.test_get_consultorios()
         self.test_weekly_schedule()
         self.test_consultorio_availability()
         
-        # Test appointment operations with consultorio (requires patient, doctor, and consultorio)
+        # Test appointment operations (CRITICAL - was failing in production)
+        print("\n📅 Testing Appointment Operations...")
+        appointment_id = None
         if patient_id and doctor_id and consultorio_success and consultorios_data:
             # Use the first available consultorio
             first_consultorio_id = consultorios_data[0]['id'] if consultorios_data else None
@@ -565,6 +588,8 @@ class ConsultorioAPITester:
                     self.test_update_appointment(appointment_id, patient_id, doctor_id, first_consultorio_id)
                     # Test conflict detection
                     self.test_appointment_conflict(patient_id, doctor_id, first_consultorio_id)
+                    # Test cancel appointment
+                    self.test_cancel_appointment(appointment_id)
         elif patient_id and doctor_id:
             # Fallback to original appointment test without consultorio
             appointment_id = self.test_create_appointment(patient_id, doctor_id)
@@ -572,8 +597,10 @@ class ConsultorioAPITester:
                 self.test_get_appointments()
                 self.test_get_appointment_by_id(appointment_id)
                 self.test_update_appointment(appointment_id, patient_id, doctor_id)
+                self.test_cancel_appointment(appointment_id)
         
         # Test dashboard
+        print("\n📊 Testing Dashboard Operations...")
         self.test_dashboard_stats()
         
         # Clean up - delete created patient (this will test delete functionality)
