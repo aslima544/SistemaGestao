@@ -1575,11 +1575,7 @@ const App = () => {
         className="input-field mt-1"
         value={dataSelecionada}
         onChange={e => setDataSelecionada(e.target.value)}
-        min={new Date().toISOString().slice(0, 10)}
       />
-      <p className="text-xs text-gray-500 mt-1">
-        ⚠️ Unidade funciona apenas de segunda a sexta-feira (dias úteis)
-      </p>
     </div>
 
     {/* Lista de consultórios fixos com botão para ver horários */}
