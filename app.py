@@ -22,9 +22,9 @@ app.add_middleware(
 
 # Static files mounting removed - using inline HTML instead
 
-# CONFIGURAÇÃO FIXA - SEMPRE ATLAS EM PRODUÇÃO
+# CONFIGURAÇÃO FIXA - SEMPRE ATLAS EM PRODUÇÃO - FORCE UPDATE V2
 if os.getenv("PORT"):  # Railway sempre tem PORT
-    print("🚂 RAILWAY DETECTADO - Usando Atlas")
+    print("🚂 RAILWAY DETECTADO - Usando Atlas - VERSION 2.0")
     MONGO_URL = "mongodb+srv://admin:senha45195487@cluster0.8skwoca.mongodb.net/sistema_consultorio?retryWrites=true&w=majority&appName=Cluster0"
     DB_NAME = "sistema_consultorio"
 else:
