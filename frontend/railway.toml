@@ -1,7 +1,6 @@
 [build]
 builder = "nixpacks"
-buildCommand = "yarn install && yarn build"
+buildCommand = "npm install && npm run build"
 
 [deploy]
 startCommand = "npx serve -s build -l $PORT"
-restartPolicyType = "never"
