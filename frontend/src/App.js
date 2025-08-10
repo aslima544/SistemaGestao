@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import './App.css';
 import ConsultorioSlots from './components/ConsultorioSlots';
-import horariosConsultorios from './constants/horariosConsultorios';
 
 
 function ModalAgendamento({ aberto, consultorio, horario, pacientes, doctors, procedimentos, onClose, onSubmit }) {
