@@ -3,10 +3,8 @@ import axios from 'axios';
 import { 
   Users, 
   Calendar, 
-  UserPlus, 
   Activity, 
   Plus,
-  Eye,
   Edit,
   Trash2,
   LogOut,
