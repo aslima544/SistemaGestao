@@ -251,28 +251,6 @@ const App = () => {
       });
   }, [consultorioSelecionado]);
 
-  
-  // Função para buscar usuário atual
-  const fetchCurrentUser = React.useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const response = await axios.get('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setCurrentUser(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar usuário atual:', error);
-        localStorage.removeItem('token');
-      }
-    }
-  }, []);
-
-  // Effect para verificar usuário logado
-  useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
-
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
