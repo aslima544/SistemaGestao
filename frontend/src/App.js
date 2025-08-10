@@ -154,7 +154,6 @@ const App = () => {
   const [doctors, setDoctors] = useState([]);
   const [consultorios, setConsultorios] = useState([]);
   const [users, setUsers] = useState([]);
-  const [appointments, setAppointments] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({});
   const [weeklySchedule, setWeeklySchedule] = useState({});
   const [procedimentos, setProcedimentos] = useState([]);
