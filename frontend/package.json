@@ -13,7 +13,8 @@
     "react-scripts": "5.0.1",
     "react-calendar": "^4.6.0",
     "react-hook-form": "^7.47.0",
-    "lucide-react": "^0.294.0"
+    "lucide-react": "^0.294.0",
+    "serve": "^14.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
