@@ -411,14 +411,105 @@ class ConsultorioAPITester:
         else:
             self.log_test("Delete Patient", False, details)
             return False
-        """Test delete patient endpoint"""
-        success, data, details = self.make_request('DELETE', f'/api/patients/{patient_id}', expected_status=200)
+
+    def test_get_procedimentos(self):
+        """Test get all procedimentos endpoint - CRITICAL TEST"""
+        success, data, details = self.make_request('GET', '/api/procedimentos')
         
-        if success:
-            self.log_test("Delete Patient", True, f"{details} - Patient deleted")
+        if success and isinstance(data, list):
+            self.log_test("Get Procedimentos", True, f"{details} - Found {len(data)} procedimentos")
+            return True, data
+        else:
+            self.log_test("Get Procedimentos", False, details)
+            return False, []
+
+    def test_create_procedimento(self):
+        """Test create procedimento endpoint"""
+        procedimento_data = {
+            "nome": "Consulta Cardiológica",
+            "descricao": "Consulta especializada em cardiologia"
+        }
+        
+        success, data, details = self.make_request('POST', '/api/procedimentos', procedimento_data, 200)
+        
+        if success and 'id' in data:
+            self.log_test("Create Procedimento", True, f"{details} - Procedimento ID: {data['id']}")
+            return data['id']
+        else:
+            self.log_test("Create Procedimento", False, details)
+            return None
+
+    def test_update_procedimento(self, procedimento_id: str):
+        """Test update procedimento endpoint"""
+        update_data = {
+            "nome": "Consulta Cardiológica Atualizada",
+            "descricao": "Consulta especializada em cardiologia - atualizada"
+        }
+        
+        success, data, details = self.make_request('PUT', f'/api/procedimentos/{procedimento_id}', update_data)
+        
+        if success and data.get('nome') == update_data['nome']:
+            self.log_test("Update Procedimento", True, f"{details} - Updated name: {data.get('nome')}")
             return True
         else:
-            self.log_test("Delete Patient", False, details)
+            self.log_test("Update Procedimento", False, details)
+            return False
+
+    def test_delete_procedimento(self, procedimento_id: str):
+        """Test delete procedimento endpoint"""
+        success, data, details = self.make_request('DELETE', f'/api/procedimentos/{procedimento_id}', expected_status=200)
+        
+        if success:
+            self.log_test("Delete Procedimento", True, f"{details} - Procedimento deleted")
+            return True
+        else:
+            self.log_test("Delete Procedimento", False, details)
+            return False
+
+    def test_get_users(self):
+        """Test get all users endpoint"""
+        success, data, details = self.make_request('GET', '/api/users')
+        
+        if success and isinstance(data, list):
+            self.log_test("Get Users", True, f"{details} - Found {len(data)} users")
+            return True
+        else:
+            self.log_test("Get Users", False, details)
+            return False
+
+    def test_debug_config(self):
+        """Test debug config endpoint"""
+        success, data, details = self.make_request('GET', '/api/debug-config')
+        
+        expected_keys = ['mongo_url_configured', 'database_name', 'mongo_url_prefix']
+        
+        if success and any(key in data for key in expected_keys):
+            self.log_test("Debug Config", True, f"{details} - Config data retrieved")
+            return True
+        else:
+            self.log_test("Debug Config", False, details)
+            return False
+
+    def test_init_railway(self):
+        """Test Railway initialization endpoint"""
+        success, data, details = self.make_request('GET', '/api/init-railway')
+        
+        if success and 'message' in data:
+            self.log_test("Init Railway", True, f"{details} - Message: {data.get('message', '')[:50]}...")
+            return True
+        else:
+            self.log_test("Init Railway", False, details)
+            return False
+
+    def test_cancel_appointment(self, appointment_id: str):
+        """Test cancel appointment endpoint"""
+        success, data, details = self.make_request('PUT', f'/api/appointments/{appointment_id}/cancel')
+        
+        if success and data.get('status') == 'canceled':
+            self.log_test("Cancel Appointment", True, f"{details} - Status: {data.get('status')}")
+            return True
+        else:
+            self.log_test("Cancel Appointment", False, details)
             return False
 
     def run_all_tests(self):
